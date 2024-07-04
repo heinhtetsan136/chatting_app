@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "543985251306",
+    "project_id": "blcaproject",
+    "storage_bucket": "blcaproject.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:543985251306:android:3c640ed840c395fce27893",
+        "android_client_info": {
+          "package_name": "com.example.blca_project_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAVOtsewfAtSJgMFEFSTkYEMjSVFWwZbgQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,6 +1,3 @@
-import 'package:blca_project_app/injection.dart';
-import 'package:blca_project_app/repo/authService.dart';
-import 'package:blca_project_app/route/route.dart';
 import 'package:flutter/material.dart';
 import 'package:starlight_utils/starlight_utils.dart';
 
@@ -14,10 +11,7 @@ class HomePage extends StatelessWidget {
         leading: TextButton(onPressed: () {}, child: const Text("Edit")),
         actions: [
           OutlinedButton.icon(
-            onPressed: () async {
-              await Injection.get<AuthService>().signOut();
-              StarlightUtils.pushReplacementNamed(RouteNames.loginPage);
-            },
+            onPressed: () async {},
             label: const Text("New"),
             icon: const Icon(Icons.add),
           )

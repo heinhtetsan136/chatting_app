@@ -1,5 +1,6 @@
 import 'package:blca_project_app/controller/home_controller/home_controller_bloc.dart';
-import 'package:blca_project_app/home_page.dart';
+import 'package:blca_project_app/view/message_screen.dart';
+import 'package:blca_project_app/view/setting/setting_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -17,7 +18,7 @@ class HomeScreen extends StatelessWidget {
             return [
               const HomePage(),
               const HomePage(),
-              const HomePage(),
+              const SettingPage(),
             ][i];
           },
           itemCount: 3,

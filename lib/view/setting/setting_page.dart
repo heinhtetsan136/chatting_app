@@ -37,10 +37,10 @@ class SettingPage extends StatelessWidget {
           padding: const EdgeInsets.only(top: 10, bottom: 10),
           children: [
             StreamBuilder(
-                stream: Injection.get<AuthService>().authState(),
+                stream: Injection.get<AuthService>().authState,
                 builder: (_, snap) {
-                  print("data is ${snap.data}");
                   final data = snap.data;
+                  print("data is $data");
                   final profileUrl = data?.photoURL;
                   if (data == null) return const SizedBox();
                   return GestureDetector(

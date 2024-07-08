@@ -25,10 +25,12 @@ class ProfileSettingBloc
     on<ProfileSettingUpdateEmail>((event, emit) async {
       emit(const ProfileSettingLoadingState());
       final result = await _authService.updateEmail(data.text, password.text);
+
       if (result.hasError) {
-        emit(ProfileSettingErrorState(result.error.toString()));
+        emit(ProfileSettingErrorState(result.error!.message.toString()));
         return;
       }
+
       emit(const ProfileSettingSuccessState());
     });
     on<ProfileSettingUpdatePassword>((event, emit) async {
@@ -36,7 +38,7 @@ class ProfileSettingBloc
       final result =
           await _authService.updatePassword(data.text, password.text);
       if (result.hasError) {
-        emit(ProfileSettingErrorState(result.error.toString()));
+        emit(ProfileSettingErrorState(result.error!.message.toString()));
         return;
       }
       emit(const ProfileSettingSuccessState());

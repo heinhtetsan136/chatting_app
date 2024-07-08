@@ -95,6 +95,7 @@ Route? router(RouteSettings settings) {
 
 List<String> _protectedRoutePath = ["/"];
 Route? _protectedRoute(String path, Widget child, RouteSettings settings) {
+  print("route user ${Injection.get<AuthService>().currentUser}");
   if (Injection.get<AuthService>().currentUser == null &&
       _protectedRoutePath.contains(path)) {
     return _route(

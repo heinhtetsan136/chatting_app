@@ -22,95 +22,127 @@ class UpdateUserInfo extends StatelessWidget {
                 : "PassWord is Required"),
       ),
       resizeToAvoidBottomInset: false,
-      body: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextFormField(
-              controller: profilesettingbloc.data,
-              validator: (value) {
-                return value?.isNotEmpty == true
-                    ? null
-                    : isChangeEmail == null
-                        ? "Name is Required"
+      body: Stack(
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextFormField(
+                  controller: profilesettingbloc.data,
+                  validator: (value) {
+                    return value?.isNotEmpty == true
+                        ? null
+                        : isChangeEmail == null
+                            ? "Name is Required"
+                            : isChangeEmail == true
+                                ? "Email is Required"
+                                : "PassWord is Required";
+                  },
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    hintText: isChangeEmail == null
+                        ? "Display Name "
                         : isChangeEmail == true
-                            ? "Email is Required"
-                            : "PassWord is Required";
-              },
-              autovalidateMode: AutovalidateMode.onUserInteraction,
+                            ? "New Email"
+                            : "New PassWord ",
+                  ),
+                  // onFieldSubmitted: (value) {
+                  //   if (value.isNotEmpty) {
+                  //     StarlightUtils.pop(result: value);
+                  //   }
+                  // },
+                ),
+                isChangeEmail == null
+                    ? const SizedBox()
+                    : Padding(
+                        padding: const EdgeInsets.only(top: 20),
+                        child: TextFormField(
+                          controller: profilesettingbloc.password,
+                          validator: (value) {
+                            return value?.isNotEmpty == true
+                                ? null
+                                : "PassWord is Required";
+                          },
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
 
-              decoration: InputDecoration(
-                border: const OutlineInputBorder(),
-                hintText: isChangeEmail == null
-                    ? "Display Name "
-                    : isChangeEmail == true
-                        ? "New Email"
-                        : "New PassWord ",
-              ),
-              // onFieldSubmitted: (value) {
-              //   if (value.isNotEmpty) {
-              //     StarlightUtils.pop(result: value);
-              //   }
-              // },
-            ),
-            isChangeEmail == null
-                ? const SizedBox()
-                : Padding(
-                    padding: const EdgeInsets.only(top: 20),
-                    child: TextFormField(
-                      controller: profilesettingbloc.password,
-                      validator: (value) {
-                        return value?.isNotEmpty == true
-                            ? null
-                            : "PassWord is Required";
-                      },
-                      autovalidateMode: AutovalidateMode.onUserInteraction,
-
-                      decoration: InputDecoration(
-                        border: const OutlineInputBorder(),
-                        hintText: isChangeEmail! == true
-                            ? "Type your password"
-                            : "Old PassWord ",
+                          decoration: InputDecoration(
+                            border: const OutlineInputBorder(),
+                            hintText: isChangeEmail! == true
+                                ? "Type your password"
+                                : "Old PassWord ",
+                          ),
+                          // onFieldSubmitted: (value) {
+                          //   if (value.isNotEmpty) {
+                          //     StarlightUtils.pop(result: value);
+                          //   }
+                          // },
+                        ),
                       ),
-                      // onFieldSubmitted: (value) {
-                      //   if (value.isNotEmpty) {
-                      //     StarlightUtils.pop(result: value);
-                      //   }
-                      // },
+                Container(
+                    padding: const EdgeInsets.only(top: 20),
+                    width: context.width,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final event = isChangeEmail == null
+                            ? const ProfileSettingUpdateName()
+                            : isChangeEmail == true
+                                ? const ProfileSettingUpdateEmail()
+                                : const ProfileSettingUpdateEmail();
+                        print("event is $event");
+                        profilesettingbloc.add(event);
+                      },
+                      child: const Text("Update Profile"),
+                    )),
+              ],
+            ),
+          ),
+          BlocConsumer<ProfileSettingBloc, ProfileSettingState>(
+              builder: (_, state) {
+            if (state is ProfileSettingLoadingState) {
+              return Center(
+                child: SizedBox(
+                  width: context.width,
+                  height: context.height,
+                  child: Container(
+                    color: Colors.red,
+                    alignment: Alignment.center,
+                    width: 200,
+                    height: 200,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        isChangeEmail == null || isChangeEmail == false
+                            ? const SizedBox()
+                            : const Padding(
+                                padding: EdgeInsets.only(bottom: 10.0),
+                                child: Text(
+                                    "Comfirm Link in Your Email in 30seconds "),
+                              ),
+                        const CupertinoActivityIndicator(),
+                      ],
                     ),
                   ),
-            Container(
-              padding: const EdgeInsets.only(top: 20),
-              width: context.width,
-              child: ElevatedButton(
-                  onPressed: () {
-                    final event = isChangeEmail == null
-                        ? const ProfileSettingUpdateName()
-                        : isChangeEmail == true
-                            ? const ProfileSettingUpdateEmail()
-                            : const ProfileSettingUpdateEmail();
-                    print("event is $event");
-                    profilesettingbloc.add(event);
-                  },
-                  child: BlocConsumer<ProfileSettingBloc, ProfileSettingState>(
-                      builder: (_, state) {
-                    if (state is ProfileSettingLoadingState) {
-                      return const Center(child: CupertinoActivityIndicator());
-                    }
-                    return const Text("Update Name");
-                  }, listener: (_, state) {
-                    if (state is ProfileSettingSuccessState) {
-                      StarlightUtils.pop();
-                    }
-                    if (state is ProfileSettingErrorState) {
-                      StarlightUtils.snackbar(
-                          SnackBar(content: Text(state.message)));
-                    }
-                  })),
-            )
-          ],
-        ),
+                ),
+              );
+            }
+            return const SizedBox();
+          }, listener: (_, state) {
+            print("user reload state is $state");
+            if (state is ProfileSettingSuccessState) {
+              StarlightUtils.pop();
+            }
+            if (state is ProfileSettingErrorState) {
+              StarlightUtils.dialog(AlertDialog(
+                title: const Text("Failed to Update"),
+                content: Text(state.message),
+              ));
+            }
+          }),
+        ],
       ),
     );
   }

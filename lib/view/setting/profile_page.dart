@@ -39,7 +39,6 @@ class ProfilePage extends StatelessWidget {
                         backgroundColor: Colors.blue,
                       ),
                       NetworkUserInfo(builder: (data) {
-                        print("data is ui $data");
                         final shortName = data.email?[0] ?? data.uid[0];
                         // final shortName = data.displayName?[0] ??
                         //     data.email?[0] ??

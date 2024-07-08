@@ -12,16 +12,27 @@ class AuthService {
   final FirebaseAuth _auth;
   final ImagePicker _imagePicker;
   final FirebaseStorage _storage;
-  User? get currentUser => _auth.currentUser;
 
+  Timer? _timer;
   final StreamController<User?> _authStateController =
-      StreamController<User?>.broadcast();
+      StreamController.broadcast();
   StreamSubscription? _authStateStreamSubscription;
   AuthService()
-      : _auth = FirebaseAuth.instance,
-        _storage = Injection.get<FirebaseStorage>(),
-        _imagePicker = Injection.get<ImagePicker>();
-  Stream<User?> authState() => _auth.userChanges();
+      : _storage = Injection.get<FirebaseStorage>(),
+        _imagePicker = Injection.get<ImagePicker>(),
+        _auth = FirebaseAuth.instance {
+    _authStateStreamSubscription = _auth.userChanges().listen((user) async {
+      print("AuthState: $user");
+      await user?.reload();
+      if (user == null) {
+        _timer?.cancel();
+        _timer = null;
+      }
+      _authStateController.sink.add(user);
+    });
+  }
+  User? get currentUser => _auth.currentUser;
+  Stream<User?> get authState => _auth.userChanges();
 
   Future<Result> signOut() async {
     return _try(() async {
@@ -64,7 +75,7 @@ class AuthService {
       final result = await callback();
       return result;
     } on FirebaseAuthException catch (e) {
-      return Result(error: GeneralError(e.toString()));
+      return Result(error: GeneralError(e.message.toString()));
     } catch (e) {
       return const Result(error: GeneralError("Unknow Error"));
     }
@@ -109,21 +120,34 @@ class AuthService {
     return _try(() async {
       final user = currentUser;
 
+      if (user == null) {
+        return const Result(error: GeneralError("User not found"));
+      }
       final value = await currentUser!
           .reauthenticateWithCredential(EmailAuthProvider.credential(
-        email: user?.email ?? "",
+        email: user.email ?? "",
         password: password,
       ));
+
       await value.user!.verifyBeforeUpdateEmail(newEmail);
-      await user!.reload();
-      Timer? timer = Timer.periodic(const Duration(seconds: 3), (timer) async {
+      await value.user!.reload();
+
+      _timer = Timer.periodic(const Duration(seconds: 5), (timer) async {
+        print("user Reload ${timer.tick}");
+        if (_auth.currentUser == null) {
+          _timer?.cancel();
+          _timer = null;
+        }
+
         await _auth.currentUser?.reload();
       });
-      Future.delayed(const Duration(minutes: 1), () {
-        timer?.cancel();
-        timer = null;
+      await Future.delayed(const Duration(seconds: 30), () {
+        print("timer cancel");
+        _timer?.cancel();
+        _timer = null;
       });
-      print("user emai is ${user.email ?? ""}");
+
+      print("user emai is ${user.email}");
       return Result(data: user);
     });
   }

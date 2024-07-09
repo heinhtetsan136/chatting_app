@@ -14,7 +14,7 @@ class NetworkUserInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder(
-      stream: Injection.get<AuthService>().authState,
+      stream: Injection.get<AuthService>().authState(),
       builder: (_, snap) {
         print("datat is ${snap.data}");
         final data = snap.data;

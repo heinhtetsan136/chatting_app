@@ -124,7 +124,7 @@ class AuthService {
     return Result(data: ref.getDownloadURL());
   }
 
-  Future<Result> updateEmail(String newEmail, String password) async {
+  Future<Result> updateEmail(String newEmail, String password) {
     return _try(() async {
       final user = currentUser;
 
@@ -140,36 +140,21 @@ class AuthService {
 
       await value.user!.verifyBeforeUpdateEmail(newEmail);
       await value.user!.reload();
-      if (currentUser == null) {
-        return Result(data: user);
-      }
-      _timer = Timer.periodic(const Duration(seconds: 10), (timer) async {
-        print("timer user Reload ${timer.tick}");
-        print("timer user $currentUser");
 
-        print("timer reload");
-        if (currentUser != null) {
-          print("timer user not null");
-          await _auth.currentUser!.reload();
-          return;
-        }
-        print("timer user null");
-        _timer?.cancel();
-        _timer = null;
+      _timer = Timer.periodic(const Duration(seconds: 5), (_) async {
+        print("timer");
+        await _auth.currentUser!.reload();
       });
-      await Future.delayed(const Duration(seconds: 100), () {
-        if (_timer == null) {
-          print("timer is null");
-          return Result(data: user);
-        }
-        print("timer is cancel by waiting time");
+      Future.delayed(const Duration(seconds: 100), () {
+        print("this is delayed");
         _timer?.cancel();
         _timer = null;
+      }).then((v) {
+        print("v $v");
       });
 
       print("timer not null");
-
-      return const Result(error: GeneralError("Comfirm time over"));
+      return const Result(error: GeneralError("firer"));
     });
   }
 

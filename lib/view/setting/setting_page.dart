@@ -37,7 +37,7 @@ class SettingPage extends StatelessWidget {
           padding: const EdgeInsets.only(top: 10, bottom: 10),
           children: [
             StreamBuilder(
-                stream: Injection.get<AuthService>().authState,
+                stream: Injection.get<AuthService>().authState(),
                 builder: (_, snap) {
                   final data = snap.data;
                   print("data is $data");

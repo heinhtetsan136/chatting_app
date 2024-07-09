@@ -21,18 +21,26 @@ class AuthService {
       : _storage = Injection.get<FirebaseStorage>(),
         _imagePicker = Injection.get<ImagePicker>(),
         _auth = FirebaseAuth.instance {
-    _authStateStreamSubscription = _auth.userChanges().listen((user) async {
+    _auth.currentUser?.reload();
+    _authStateStreamSubscription = _auth.userChanges().listen((user) {
+      _authStateController.sink.add(user);
+      currentUser = user;
+      print("currentUser is $currentUser");
       print("AuthState: $user");
-      await user?.reload();
+
+      print("AuthState: $user");
       if (user == null) {
         _timer?.cancel();
         _timer = null;
+        print("Timer is Canel by user stream");
       }
-      _authStateController.sink.add(user);
     });
   }
-  User? get currentUser => _auth.currentUser;
-  Stream<User?> get authState => _auth.userChanges();
+  User? currentUser;
+  Stream<User?> authState() {
+    print("object is ${_authStateController.stream}");
+    return _auth.userChanges();
+  }
 
   Future<Result> signOut() async {
     return _try(() async {
@@ -123,6 +131,7 @@ class AuthService {
       if (user == null) {
         return const Result(error: GeneralError("User not found"));
       }
+      await user.reload();
       final value = await currentUser!
           .reauthenticateWithCredential(EmailAuthProvider.credential(
         email: user.email ?? "",
@@ -131,24 +140,36 @@ class AuthService {
 
       await value.user!.verifyBeforeUpdateEmail(newEmail);
       await value.user!.reload();
+      if (currentUser == null) {
+        return Result(data: user);
+      }
+      _timer = Timer.periodic(const Duration(seconds: 10), (timer) async {
+        print("timer user Reload ${timer.tick}");
+        print("timer user $currentUser");
 
-      _timer = Timer.periodic(const Duration(seconds: 5), (timer) async {
-        print("user Reload ${timer.tick}");
-        if (_auth.currentUser == null) {
-          _timer?.cancel();
-          _timer = null;
+        print("timer reload");
+        if (currentUser != null) {
+          print("timer user not null");
+          await _auth.currentUser!.reload();
+          return;
         }
-
-        await _auth.currentUser?.reload();
+        print("timer user null");
+        _timer?.cancel();
+        _timer = null;
       });
-      await Future.delayed(const Duration(seconds: 30), () {
-        print("timer cancel");
+      await Future.delayed(const Duration(seconds: 100), () {
+        if (_timer == null) {
+          print("timer is null");
+          return Result(data: user);
+        }
+        print("timer is cancel by waiting time");
         _timer?.cancel();
         _timer = null;
       });
 
-      print("user emai is ${user.email}");
-      return Result(data: user);
+      print("timer not null");
+
+      return const Result(error: GeneralError("Comfirm time over"));
     });
   }
 
@@ -160,6 +181,7 @@ class AuthService {
   }
 
   void dispose() {
+    _timer?.cancel();
     _authStateController.close();
     _authStateStreamSubscription?.cancel();
   }

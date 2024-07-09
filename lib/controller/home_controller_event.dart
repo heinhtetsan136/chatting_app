@@ -10,6 +10,10 @@ class gotoContactScreen extends HomePageEvent {
   const gotoContactScreen();
 }
 
-class gotoSettings extends HomePageEvent {
-  const gotoSettings();
+class gotoPost extends HomePageEvent {
+  const gotoPost();
+}
+
+class gotoPostScreen extends HomePageEvent {
+  const gotoPostScreen();
 }

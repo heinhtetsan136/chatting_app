@@ -23,8 +23,8 @@ class AuthService {
         _auth = FirebaseAuth.instance {
     _auth.currentUser?.reload();
     _authStateStreamSubscription = _auth.userChanges().listen((user) {
-      _authStateController.sink.add(user);
       currentUser = user;
+      _authStateController.sink.add(currentUser);
       print("currentUser is $currentUser");
       print("AuthState: $user");
 
@@ -39,7 +39,7 @@ class AuthService {
   User? currentUser;
   Stream<User?> authState() {
     print("object is ${_authStateController.stream}");
-    return _auth.userChanges();
+    return _authStateController.stream;
   }
 
   Future<Result> signOut() async {

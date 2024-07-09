@@ -1,6 +1,6 @@
 import 'package:blca_project_app/controller/home_controller/home_controller_bloc.dart';
+import 'package:blca_project_app/view/homeScreen/post_screen.dart';
 import 'package:blca_project_app/view/message_screen.dart';
-import 'package:blca_project_app/view/setting/setting_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -18,7 +18,7 @@ class HomeScreen extends StatelessWidget {
             return [
               const HomePage(),
               const HomePage(),
-              const SettingPage(),
+              const PostScreen(),
             ][i];
           },
           itemCount: 3,
@@ -36,7 +36,7 @@ class HomeScreen extends StatelessWidget {
                 BottomNavigationBarItem(
                     icon: Icon(Icons.contact_emergency), label: "Contact"),
                 BottomNavigationBarItem(
-                    icon: Icon(Icons.settings), label: "Settings"),
+                    icon: Icon(Icons.settings), label: "Post"),
               ]);
         }));
   }

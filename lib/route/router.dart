@@ -10,6 +10,7 @@ import 'package:blca_project_app/view/auth/login_page.dart';
 import 'package:blca_project_app/view/auth/sign_up_page.dart';
 import 'package:blca_project_app/view/homeScreen/home.dart';
 import 'package:blca_project_app/view/setting/profile_page.dart';
+import 'package:blca_project_app/view/setting/setting_page.dart';
 import 'package:blca_project_app/view/setting/update_user_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -29,11 +30,7 @@ Route? router(RouteSettings settings) {
               child: const SignUpPage()),
           settings);
     case RouteNames.profile:
-      return _protectedRoute(
-          incomingRoute,
-          BlocProvider(
-              create: (_) => ProfileSettingBloc(), child: const ProfilePage()),
-          settings);
+      return _protectedRoute(incomingRoute, const ProfilePage(), settings);
     case RouteNames.homePage:
       return _protectedRoute(
           incomingRoute,
@@ -42,16 +39,10 @@ Route? router(RouteSettings settings) {
               child: const HomeScreen()),
           settings);
     case RouteNames.updatePassword:
-      final bloc = settings.arguments;
-      if (bloc is! ProfileSettingBloc) {
-        return _protectedRoute(
-            incomingRoute, ErrorWidget("Something went wrong"), settings);
-      }
-
       return _protectedRoute(
           incomingRoute,
-          BlocProvider.value(
-              value: bloc,
+          BlocProvider(
+              create: (_) => ProfileSettingBloc(),
               child: const UpdateUserInfo(
                 isChangeEmail: false,
               )),
@@ -65,23 +56,21 @@ Route? router(RouteSettings settings) {
 
       return _protectedRoute(
           incomingRoute,
-          BlocProvider.value(
-              value: bloc,
+          BlocProvider(
+              create: (_) => ProfileSettingBloc(),
               child: const UpdateUserInfo(
                 isChangeEmail: true,
               )),
           settings);
     case RouteNames.updateUserName:
-      final bloc = settings.arguments;
-      if (bloc is! ProfileSettingBloc) {
-        return _protectedRoute(
-            incomingRoute, ErrorWidget("Something went wrong"), settings);
-      }
-
       return _protectedRoute(
           incomingRoute,
-          BlocProvider.value(value: bloc, child: const UpdateUserInfo()),
+          BlocProvider(
+              create: (_) => ProfileSettingBloc(),
+              child: const UpdateUserInfo()),
           settings);
+    case RouteNames.settingPage:
+      return _protectedRoute(incomingRoute, const SettingPage(), settings);
     default:
       // return _route(const LoginPage(), settings);
       return _protectedRoute(

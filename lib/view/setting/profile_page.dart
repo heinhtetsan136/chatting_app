@@ -4,7 +4,6 @@ import 'package:blca_project_app/view/setting/widget/network_profile.dart';
 import 'package:blca_project_app/view/setting/widget/network_user_info.dart';
 import 'package:blca_project_app/view/setting/widget/profile_setting_card.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:starlight_utils/starlight_utils.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -12,7 +11,6 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final profilesettingcubit = context.read<ProfileSettingBloc>();
     return Scaffold(
         appBar: AppBar(
           title: const Text("Update Profile"),
@@ -126,8 +124,9 @@ class ProfilePage extends StatelessWidget {
             ),
             ProfileSettingCard(
                 onTap: () async {
-                  StarlightUtils.pushNamed(RouteNames.updateUserName,
-                      arguments: profilesettingcubit);
+                  StarlightUtils.pushNamed(
+                    RouteNames.updateUserName,
+                  );
                 },
                 title: "Display Name",
                 value: (user) {

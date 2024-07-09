@@ -21,7 +21,7 @@ class HomePageBloc extends Bloc<HomePageEvent, int> {
         controller.animateToPage(1, duration: _duration, curve: _curve);
       },
     );
-    on<gotoSettings>(
+    on<gotoPost>(
       (event, emit) {
         emit(2);
         controller.animateToPage(2, duration: _duration, curve: _curve);
@@ -36,7 +36,7 @@ class HomePageBloc extends Bloc<HomePageEvent, int> {
       case 1:
         return const gotoContactScreen();
       default:
-        return const gotoSettings();
+        return const gotoPost();
     }
   }
 

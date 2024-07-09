@@ -1,5 +1,6 @@
 import 'package:blca_project_app/firebase_options.dart';
 import 'package:blca_project_app/repo/authService.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -31,6 +32,7 @@ Future<void> setUp() async {
     appleProvider: AppleProvider.appAttest,
   );
   Injection.registerLazySingleton(() => ImagePicker());
+  Injection.registerLazySingleton(() => FirebaseFirestore.instance);
   Injection.registerLazySingleton(() => FirebaseStorage.instance);
   Injection.registerSingleton(AuthService(),
       dispose: (instance) => instance.dispose());

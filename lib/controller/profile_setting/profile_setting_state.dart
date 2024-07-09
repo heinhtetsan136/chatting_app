@@ -18,3 +18,15 @@ class ProfileSettingErrorState extends ProfileSettingState {
   final String message;
   const ProfileSettingErrorState(this.message);
 }
+
+class ProfileSettingUserChangeState extends ProfileSettingState {
+  const ProfileSettingUserChangeState();
+}
+
+class ProfileSettingSignoutState extends ProfileSettingState {
+  const ProfileSettingSignoutState();
+}
+
+class ProfileSettingUploadingPhotoState extends ProfileSettingState {
+  const ProfileSettingUploadingPhotoState();
+}

@@ -37,8 +37,18 @@ class SettingPage extends StatelessWidget {
           padding: const EdgeInsets.only(top: 10, bottom: 10),
           children: [
             StreamBuilder(
+                initialData: null,
                 stream: Injection.get<AuthService>().authState(),
                 builder: (_, snap) {
+                  if (snap.connectionState == ConnectionState.waiting) {
+                    return const SizedBox(
+                        height: 100,
+                        width: 100,
+                        child: Center(
+                          child: CircularProgressIndicator(),
+                        ));
+                  }
+                  print("connection state is ${snap.connectionState}");
                   final data = snap.data;
                   print("data is $data");
                   final profileUrl = data?.photoURL;

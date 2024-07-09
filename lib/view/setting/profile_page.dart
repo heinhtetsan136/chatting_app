@@ -1,4 +1,3 @@
-import 'package:blca_project_app/controller/profile_setting/profile_setting_bloc.dart';
 import 'package:blca_project_app/route/route.dart';
 import 'package:blca_project_app/view/setting/widget/network_profile.dart';
 import 'package:blca_project_app/view/setting/widget/network_user_info.dart';
@@ -29,52 +28,55 @@ class ProfilePage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      const CircleAvatar(
-                        radius: 50,
-                        backgroundColor: Colors.blue,
-                      ),
-                      NetworkUserInfo(builder: (data) {
-                        final shortName = data.email?[0] ?? data.uid[0];
-                        // final shortName = data.displayName?[0] ??
-                        //     data.email?[0] ??
-                        //     data.uid[0];
-                        final profileUrl = data.photoURL ?? "";
-                        if (profileUrl.isEmpty == true) {
-                          return CircleAvatar(
-                            maxRadius: 48,
-                            child: Text(
-                              shortName,
-                              style: const TextStyle(
-                                fontSize: 28,
+                  GestureDetector(
+                    onTap: () {},
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        const CircleAvatar(
+                          radius: 50,
+                          backgroundColor: Colors.blue,
+                        ),
+                        NetworkUserInfo(builder: (data) {
+                          final shortName = data.email?[0] ?? data.uid[0];
+                          // final shortName = data.displayName?[0] ??
+                          //     data.email?[0] ??
+                          //     data.uid[0];
+                          final profileUrl = data.photoURL ?? "";
+                          if (profileUrl.isEmpty == true) {
+                            return CircleAvatar(
+                              maxRadius: 48,
+                              child: Text(
+                                shortName,
+                                style: const TextStyle(
+                                  fontSize: 28,
+                                ),
+                              ),
+                            );
+                          }
+                          return NetworkProfile(
+                            radius: 42,
+                            profileUrl: profileUrl,
+                            onFail: CircleAvatar(
+                              maxRadius: 42,
+                              child: Text(
+                                shortName,
+                                style: const TextStyle(
+                                  fontSize: 28,
+                                ),
                               ),
                             ),
                           );
-                        }
-                        return NetworkProfile(
-                          radius: 42,
-                          profileUrl: profileUrl,
-                          onFail: CircleAvatar(
-                            maxRadius: 42,
-                            child: Text(
-                              shortName,
-                              style: const TextStyle(
-                                fontSize: 28,
-                              ),
-                            ),
+                        }),
+                        const Positioned(
+                          bottom: 5,
+                          child: Icon(
+                            Icons.camera_alt_rounded,
+                            size: 18,
                           ),
-                        );
-                      }),
-                      const Positioned(
-                        bottom: 5,
-                        child: Icon(
-                          Icons.camera_alt_rounded,
-                          size: 18,
-                        ),
-                      )
-                    ],
+                        )
+                      ],
+                    ),
                   ),
                   Padding(
                     padding: const EdgeInsets.only(top: 10),
@@ -138,8 +140,9 @@ class ProfilePage extends StatelessWidget {
                 }),
             ProfileSettingCard(
                 onTap: () async {
-                  StarlightUtils.pushNamed(RouteNames.updateEmail,
-                      arguments: ProfileSettingBloc());
+                  StarlightUtils.pushNamed(
+                    RouteNames.updateEmail,
+                  );
                 },
                 title: "Identity",
                 value: (user) {
@@ -159,8 +162,9 @@ class ProfilePage extends StatelessWidget {
             ),
             ElevatedButton(
                 onPressed: () {
-                  StarlightUtils.pushNamed(RouteNames.updatePassword,
-                      arguments: ProfileSettingBloc());
+                  StarlightUtils.pushNamed(
+                    RouteNames.updatePassword,
+                  );
                 },
                 child: const Text("Change Password"))
           ],

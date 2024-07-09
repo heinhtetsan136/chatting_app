@@ -112,17 +112,10 @@ class UpdateUserInfo extends StatelessWidget {
                     alignment: Alignment.center,
                     width: 200,
                     height: 200,
-                    child: Column(
+                    child: const Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        isChangeEmail == null || isChangeEmail == false
-                            ? const SizedBox()
-                            : const Padding(
-                                padding: EdgeInsets.only(bottom: 10.0),
-                                child: Text(
-                                    "Comfirm Link in Your Email in 30seconds "),
-                              ),
-                        const CupertinoActivityIndicator(),
+                        CupertinoActivityIndicator(),
                       ],
                     ),
                   ),
@@ -137,8 +130,15 @@ class UpdateUserInfo extends StatelessWidget {
             }
             if (state is ProfileSettingErrorState) {
               StarlightUtils.dialog(AlertDialog(
-                title: const Text("Failed to Update"),
+                title: const Text("Update userInfo"),
                 content: Text(state.message),
+                actions: [
+                  TextButton(
+                      onPressed: () {
+                        StarlightUtils.pop();
+                      },
+                      child: const Text("OK"))
+                ],
               ));
             }
           }),

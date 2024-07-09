@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:blca_project_app/injection.dart';
 import 'package:blca_project_app/model/error.dart';
 import 'package:blca_project_app/model/result.dart';
+import 'package:blca_project_app/repo/user_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:image_picker/image_picker.dart';
@@ -12,6 +14,7 @@ class AuthService {
   final FirebaseAuth _auth;
   final ImagePicker _imagePicker;
   final FirebaseStorage _storage;
+  final FirebaseFirestore db;
 
   Timer? _timer;
   final StreamController<User?> _authStateController =
@@ -20,16 +23,19 @@ class AuthService {
   AuthService()
       : _storage = Injection.get<FirebaseStorage>(),
         _imagePicker = Injection.get<ImagePicker>(),
-        _auth = FirebaseAuth.instance {
+        _auth = FirebaseAuth.instance,
+        db = Injection.get<FirebaseFirestore>() {
     _auth.currentUser?.reload();
-    _authStateStreamSubscription = _auth.userChanges().listen((user) {
+    _authStateStreamSubscription =
+        _auth.userChanges().distinct().listen((user) {
       currentUser = user;
-      _authStateController.sink.add(currentUser);
+      _authStateController.sink.add(user);
       print("currentUser is $currentUser");
       print("AuthState: $user");
 
       print("AuthState: $user");
       if (user == null) {
+        print("timer tick ${_timer?.tick}");
         _timer?.cancel();
         _timer = null;
         print("Timer is Canel by user stream");
@@ -39,7 +45,7 @@ class AuthService {
   User? currentUser;
   Stream<User?> authState() {
     print("object is ${_authStateController.stream}");
-    return _authStateController.stream;
+    return _auth.userChanges();
   }
 
   Future<Result> signOut() async {
@@ -93,6 +99,12 @@ class AuthService {
     return _try(() async {
       final UserCredential user = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
+      final doc = db.collection("users").doc(user.user!.uid);
+      final ContactUser contactUser = ContactUser.fromJson(user);
+      await doc.set(
+        contactUser.toJson(),
+        SetOptions(merge: true),
+      );
       return Result(data: user);
     });
   }
@@ -143,10 +155,11 @@ class AuthService {
 
       _timer = Timer.periodic(const Duration(seconds: 5), (_) async {
         print("timer");
-        await _auth.currentUser!.reload();
+        await _auth.currentUser?.reload();
       });
       Future.delayed(const Duration(seconds: 100), () {
         print("this is delayed");
+
         _timer?.cancel();
         _timer = null;
       }).then((v) {
@@ -154,7 +167,8 @@ class AuthService {
       });
 
       print("timer not null");
-      return const Result(error: GeneralError("firer"));
+      return const Result(
+          error: GeneralError("check comfirm link in your email"));
     });
   }
 

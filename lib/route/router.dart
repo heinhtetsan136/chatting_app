@@ -48,12 +48,6 @@ Route? router(RouteSettings settings) {
               )),
           settings);
     case RouteNames.updateEmail:
-      final bloc = settings.arguments;
-      if (bloc is! ProfileSettingBloc) {
-        return _protectedRoute(
-            incomingRoute, ErrorWidget("Something went wrong"), settings);
-      }
-
       return _protectedRoute(
           incomingRoute,
           BlocProvider(
@@ -84,14 +78,17 @@ Route? router(RouteSettings settings) {
 
 List<String> _protectedRoutePath = ["/"];
 Route? _protectedRoute(String path, Widget child, RouteSettings settings) {
-  print("route user ${Injection.get<AuthService>().currentUser}");
-  if (Injection.get<AuthService>().currentUser == null &&
-      _protectedRoutePath.contains(path)) {
-    return _route(
-        BlocProvider(create: (_) => LoginBloc(), child: const LoginPage()),
-        settings);
-  }
-  return _route(child, settings);
+  print("route user is ${Injection.get<AuthService>().currentUser}");
+  return _route(
+    Injection.get<AuthService>().currentUser == null &&
+            _protectedRoutePath.contains(path)
+        ? BlocProvider(
+            create: (_) => LoginBloc(),
+            child: const LoginPage(),
+          )
+        : child,
+    settings,
+  );
 }
 
 Route? _route(Widget child, RouteSettings settings) {

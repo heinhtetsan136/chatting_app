@@ -1,4 +1,5 @@
 import 'package:blca_project_app/injection.dart';
+import 'package:blca_project_app/route/route.dart';
 import 'package:blca_project_app/route/router.dart';
 import 'package:flutter/material.dart';
 import 'package:starlight_utils/starlight_utils.dart';
@@ -18,6 +19,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       navigatorKey: StarlightUtils.navigatorKey,
+      initialRoute: RouteNames.homePage,
       onGenerateRoute: router,
       title: 'Flutter Demo',
       theme: ThemeData(

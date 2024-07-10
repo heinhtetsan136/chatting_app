@@ -2,6 +2,7 @@ import 'package:blca_project_app/controller/register/register_event.dart';
 import 'package:blca_project_app/controller/register/register_state.dart';
 import 'package:blca_project_app/injection.dart';
 import 'package:blca_project_app/repo/authService.dart';
+import 'package:blca_project_app/repo/firestoreService.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -15,6 +16,7 @@ class ResgisterBloc extends Bloc<RegisterBaseEvent, RegisterBaseState> {
   final FocusNode passwordFocusNode = FocusNode();
   final ValueNotifier<bool> passwordIsShow = ValueNotifier(true);
   final ValueNotifier<bool> comfirmpasswordIsShow = ValueNotifier(true);
+  final FireStoreService db = Injection.get<FireStoreService>();
   GlobalKey<FormState>? form = GlobalKey<FormState>();
   final _auth = Injection.get<AuthService>();
   ResgisterBloc(super.initialState) {
@@ -28,6 +30,7 @@ class ResgisterBloc extends Bloc<RegisterBaseEvent, RegisterBaseState> {
         emit(RegisterFailedState(user.error!.message));
         return;
       }
+      await db.createUser(user.data!);
       emit(const RegisterSuccessState());
     });
   }

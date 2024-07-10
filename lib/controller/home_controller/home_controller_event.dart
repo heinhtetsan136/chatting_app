@@ -17,3 +17,7 @@ class gotoPost extends HomePageEvent {
 class gotoPostScreen extends HomePageEvent {
   const gotoPostScreen();
 }
+
+class SignoutEvent extends HomePageEvent {
+  const SignoutEvent();
+}

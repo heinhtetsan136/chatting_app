@@ -1,8 +1,12 @@
 import 'package:blca_project_app/controller/home_controller/home_controller_bloc.dart';
+import 'package:blca_project_app/controller/home_controller/home_controller_event.dart';
+import 'package:blca_project_app/controller/home_controller/home_controller_state.dart';
+import 'package:blca_project_app/route/route.dart';
 import 'package:blca_project_app/view/homeScreen/post_screen.dart';
 import 'package:blca_project_app/view/message_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:starlight_utils/starlight_utils.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -10,34 +14,65 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final homePageBloc = context.read<HomePageBloc>();
-    return Scaffold(
-        resizeToAvoidBottomInset: false,
-        body: PageView.builder(
-          controller: homePageBloc.controller,
-          itemBuilder: (_, i) {
-            return [
-              const HomePage(),
-              const HomePage(),
-              const PostScreen(),
-            ][i];
-          },
-          itemCount: 3,
-        ),
-        bottomNavigationBar:
-            BlocBuilder<HomePageBloc, int>(builder: (_, state) {
-          print("state is $state");
-          return BottomNavigationBar(
-              currentIndex: state,
-              onTap: (i) {
-                homePageBloc.add(homePageBloc.activate(i));
-              },
-              items: const [
-                BottomNavigationBarItem(icon: Icon(Icons.chat), label: "Chat"),
-                BottomNavigationBarItem(
-                    icon: Icon(Icons.contact_emergency), label: "Contact"),
-                BottomNavigationBarItem(
-                    icon: Icon(Icons.settings), label: "Post"),
-              ]);
-        }));
+    return BlocListener<HomePageBloc, HomeBlocBaseState>(
+      listener: (_, state) {
+        print("state is $state");
+        if (state is HomeLogout) {
+          StarlightUtils.pushReplacementNamed(RouteNames.loginPage);
+        }
+      },
+      child: Scaffold(
+          appBar: AppBar(),
+          drawer: Drawer(
+            child: ListView(
+              children: [
+                const DrawerHeader(
+                  decoration: BoxDecoration(
+                    color: Colors.blue,
+                  ),
+                  child: Text("Drawer Header"),
+                ),
+                ListTile(
+                  title: const Text("Logout"),
+                  onTap: () {
+                    homePageBloc.add(const SignoutEvent());
+                  },
+                )
+              ],
+            ),
+          ),
+          resizeToAvoidBottomInset: false,
+          body: PageView.builder(
+            controller: homePageBloc.controller,
+            itemBuilder: (_, i) {
+              return [
+                const HomePage(),
+                const HomePage(),
+                const PostScreen(),
+              ][i];
+            },
+            itemCount: 3,
+          ),
+          bottomNavigationBar:
+              BlocBuilder<HomePageBloc, HomeBlocBaseState>(builder: (_, state) {
+            print("state is $state");
+            if (state is HomeBlocNavigationState) {
+              return BottomNavigationBar(
+                  currentIndex: state.index,
+                  onTap: (i) {
+                    homePageBloc.add(homePageBloc.activate(i));
+                  },
+                  items: const [
+                    BottomNavigationBarItem(
+                        icon: Icon(Icons.chat), label: "Chat"),
+                    BottomNavigationBarItem(
+                        icon: Icon(Icons.contact_emergency), label: "Contact"),
+                    BottomNavigationBarItem(
+                        icon: Icon(Icons.settings), label: "Post"),
+                  ]);
+            }
+            return const SizedBox();
+          })),
+    );
   }
 }

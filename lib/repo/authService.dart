@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:blca_project_app/injection.dart';
 import 'package:blca_project_app/model/error.dart';
 import 'package:blca_project_app/model/result.dart';
-import 'package:blca_project_app/repo/user_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -26,9 +25,7 @@ class AuthService {
         _auth = FirebaseAuth.instance,
         db = Injection.get<FirebaseFirestore>() {
     _auth.currentUser?.reload();
-    _authStateStreamSubscription =
-        _auth.userChanges().distinct().listen((user) {
-      currentUser = user;
+    _authStateStreamSubscription = _auth.userChanges().listen((user) {
       _authStateController.sink.add(user);
       print("currentUser is $currentUser");
       print("AuthState: $user");
@@ -42,7 +39,7 @@ class AuthService {
       }
     });
   }
-  User? currentUser;
+  User? get currentUser => _auth.currentUser;
   Stream<User?> authState() {
     print("object is ${_authStateController.stream}");
     return _auth.userChanges();
@@ -50,8 +47,8 @@ class AuthService {
 
   Future<Result> signOut() async {
     return _try(() async {
-      final result = _auth.signOut();
-      return Result(data: result);
+      final result = await _auth.signOut();
+      return const Result(data: ());
     });
   }
 
@@ -91,7 +88,8 @@ class AuthService {
     } on FirebaseAuthException catch (e) {
       return Result(error: GeneralError(e.message.toString()));
     } catch (e) {
-      return const Result(error: GeneralError("Unknow Error"));
+      print("error is ${e.toString()}");
+      return const Result(error: GeneralError("Something went wrong"));
     }
   }
 
@@ -99,12 +97,7 @@ class AuthService {
     return _try(() async {
       final UserCredential user = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
-      final doc = db.collection("users").doc(user.user!.uid);
-      final ContactUser contactUser = ContactUser.fromJson(user);
-      await doc.set(
-        contactUser.toJson(),
-        SetOptions(merge: true),
-      );
+
       return Result(data: user);
     });
   }
@@ -155,9 +148,9 @@ class AuthService {
 
       _timer = Timer.periodic(const Duration(seconds: 5), (_) async {
         print("timer");
-        await _auth.currentUser?.reload();
+        await user.reload();
       });
-      Future.delayed(const Duration(seconds: 100), () {
+      await Future.delayed(const Duration(seconds: 100), () {
         print("this is delayed");
 
         _timer?.cancel();

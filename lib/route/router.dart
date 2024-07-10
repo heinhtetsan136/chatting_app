@@ -1,3 +1,4 @@
+import 'package:blca_project_app/controller/contact_controller/controller_bloc.dart';
 import 'package:blca_project_app/controller/home_controller/home_controller_bloc.dart';
 import 'package:blca_project_app/controller/login/login_bloc.dart';
 import 'package:blca_project_app/controller/profile_setting/profile_setting_bloc.dart';
@@ -34,9 +35,10 @@ Route? router(RouteSettings settings) {
     case RouteNames.homePage:
       return _protectedRoute(
           incomingRoute,
-          MultiBlocProvider(
-              providers: [BlocProvider(create: (_) => HomePageBloc())],
-              child: const HomeScreen()),
+          MultiBlocProvider(providers: [
+            BlocProvider(create: (_) => HomePageBloc()),
+            BlocProvider(create: (_) => ContactBloc()),
+          ], child: const HomeScreen()),
           settings);
     case RouteNames.updatePassword:
       return _protectedRoute(
@@ -67,11 +69,11 @@ Route? router(RouteSettings settings) {
       return _protectedRoute(incomingRoute, const SettingPage(), settings);
     default:
       // return _route(const LoginPage(), settings);
-      return _protectedRoute(
-          incomingRoute,
-          MultiBlocProvider(
-              providers: [BlocProvider(create: (_) => HomePageBloc())],
-              child: const HomeScreen()),
+      return _route(
+          const Scaffold(
+              body: Center(
+            child: Text("Page not found"),
+          )),
           settings);
   }
 }
@@ -80,8 +82,7 @@ List<String> _protectedRoutePath = ["/"];
 Route? _protectedRoute(String path, Widget child, RouteSettings settings) {
   print("route user is ${Injection.get<AuthService>().currentUser}");
   return _route(
-    Injection.get<AuthService>().currentUser == null &&
-            _protectedRoutePath.contains(path)
+    Injection<AuthService>().currentUser == null
         ? BlocProvider(
             create: (_) => LoginBloc(),
             child: const LoginPage(),

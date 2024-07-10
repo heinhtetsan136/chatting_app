@@ -11,20 +11,19 @@ class ProfileSettingBloc
     extends Bloc<ProfileSettingBaseEvent, ProfileSettingState> {
   final TextEditingController data = TextEditingController();
 
-  final AuthService _authService = Injection.get<AuthService>();
+  final AuthService _authService = Injection<AuthService>();
   final TextEditingController password = TextEditingController();
   StreamSubscription? _authstate;
 
   ProfileSettingBloc() : super(const ProfileSettingInitialState()) {
-    on<ProfileSettingUpdateName>((event, emit) async {
-      _authstate = _authService.authState().listen((user) {
-        if (user == null) {
-          add(const SignoutEvent());
-        } else {
-          add(const UserChangeEvent());
-        }
-      });
+    _authstate = _authService.authState().distinct().listen((user) {
+      print("bloc user $user");
 
+      if (user == null) {
+        add(const SignoutEvent());
+      }
+    });
+    on<ProfileSettingUpdateName>((event, emit) async {
       emit(const ProfileSettingLoadingState());
       final result = await _authService.updateUserName(data.text);
       if (result.hasError) {
@@ -53,8 +52,10 @@ class ProfileSettingBloc
       }
       emit(const ProfileSettingSuccessState());
     });
-    on<SignoutEvent>((_, emit) {
-      _authService.signOut();
+    on<SignoutEvent>((_, emit) async {
+      print("SignoutEvent");
+      await _authService.signOut();
+
       emit(const ProfileSettingSignoutState());
     });
     on<UserChangeEvent>((_, emit) {
@@ -78,6 +79,7 @@ class ProfileSettingBloc
     data.dispose();
     _authService.dispose();
     password.dispose();
+    _authstate?.cancel();
 
     // TODO: implement close
     return super.close();

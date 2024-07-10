@@ -1,5 +1,6 @@
 import 'package:blca_project_app/firebase_options.dart';
 import 'package:blca_project_app/repo/authService.dart';
+import 'package:blca_project_app/repo/firestoreService.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -36,4 +37,5 @@ Future<void> setUp() async {
   Injection.registerLazySingleton(() => FirebaseStorage.instance);
   Injection.registerSingleton(AuthService(),
       dispose: (instance) => instance.dispose());
+  Injection.registerLazySingleton(() => FireStoreService());
 }

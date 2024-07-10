@@ -1,4 +1,8 @@
+import 'package:blca_project_app/controller/contact_controller/contact_event.dart';
+import 'package:blca_project_app/controller/contact_controller/contact_state.dart';
+import 'package:blca_project_app/controller/contact_controller/controller_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:starlight_utils/starlight_utils.dart';
 
 class HomePage extends StatelessWidget {
@@ -6,6 +10,7 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final contactbloc = context.read<ContactBloc>();
     return Scaffold(
       appBar: AppBar(
         leading: TextButton(onPressed: () {}, child: const Text("Edit")),
@@ -34,16 +39,41 @@ class HomePage extends StatelessWidget {
               height: 10,
             ),
             Expanded(
-              child: ListView.separated(
-                  separatorBuilder: (_, i) {
-                    return const SizedBox(
-                      height: 1,
-                    );
+              child: BlocBuilder<ContactBloc, ContactBaseState>(
+                  builder: (_, state) {
+                final post = state.posts;
+                if (state is ContactLoadingState) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+                if (post.isEmpty) {
+                  return Center(
+                      child: TextButton(
+                    onPressed: () {
+                      contactbloc.add(RefreshContactEvent());
+                    },
+                    child: const Text("No Data"),
+                  ));
+                }
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    contactbloc.add(RefreshContactEvent());
                   },
-                  itemCount: 20,
-                  itemBuilder: (_, i) {
-                    return MessagePost(name: "$i", message: "abacajfkjaljfkj");
-                  }),
+                  child: ListView.separated(
+                      separatorBuilder: (_, i) {
+                        return const SizedBox(
+                          height: 1,
+                        );
+                      },
+                      itemCount: state.posts.length,
+                      itemBuilder: (_, i) {
+                        return MessagePost(
+                            name: state.posts[i].email,
+                            message: "abacajfkjaljfkj");
+                      }),
+                );
+              }),
             ),
           ],
         ),

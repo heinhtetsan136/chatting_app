@@ -55,7 +55,7 @@ class ChatRoom<T extends ContactUser> extends StatelessWidget {
                       return const SizedBox(height: 10);
                     },
                     itemBuilder: (_, i) {
-                      print("messages ${state.message[i].text}");
+                      print("messages ${state.message[i].finalMessage}");
                       return Align(
                         alignment: Alignment.centerLeft,
                         child: DecoratedBox(
@@ -66,7 +66,7 @@ class ChatRoom<T extends ContactUser> extends StatelessWidget {
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Text(
-                              state.message[i].text,
+                              state.message[i].finalMessage,
                               style: const TextStyle(),
                             ),
                           ),
@@ -96,6 +96,7 @@ class ChatRoom<T extends ContactUser> extends StatelessWidget {
                   IconButton(
                       onPressed: () {
                         bloc.sendMessage();
+                        bloc.textController.clear();
                       },
                       icon: const Icon(Icons.send))
                 ],

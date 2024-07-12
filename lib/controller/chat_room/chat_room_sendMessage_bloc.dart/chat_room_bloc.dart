@@ -15,7 +15,7 @@ class ChatRoomBloc extends Bloc<ChatRoomBaseEvent, ChatRoomBaseState> {
   final FocusNode focusNode = FocusNode();
   final MessagingService _messagingService = Injection.get<MessagingService>();
   ChatRoomBloc(this.otherUser) : super(const ChatRoomInitialState([])) {
-    _messagingService.contactListener(contactListener);
+    _messagingService.contactListener(contactListener, otherUser);
     on<NewMessageEvent>((event, emit) {
       print("new Message Event");
       emit(ChatRoomLoadedState(event.post));
@@ -55,25 +55,26 @@ class ChatRoomBloc extends Bloc<ChatRoomBaseEvent, ChatRoomBaseState> {
   }
   void contactListener(ChatRoom post) {
     final copied = state.message.toList();
-    final index = copied.indexOf(post);
-    if (index == -1) {
-      copied.add(post);
-    } else {
-      copied[index] = post;
-    }
+    print("new message $copied");
+
+    copied.add(post);
+    print("new message addd $copied");
     add(NewMessageEvent(copied));
   }
 
   void sendMessage() async {
     focusNode.unfocus();
+
     if (textController.text.isEmpty) {
       return;
     }
 
-    final result = await _messagingService.SendMessage(ChatRoomParams(
-        text: textController.text,
-        fromUserId: _authService.currentUser!.uid,
-        toUserId: otherUser.uid));
+    final result = await _messagingService.SendMessage(
+        ChatRoomParams(
+            finalMessage: textController.text,
+            fromUserId: _authService.currentUser!.uid,
+            toUserId: otherUser.uid),
+        textController.text);
   }
 
   @override

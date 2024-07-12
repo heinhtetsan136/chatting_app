@@ -1,6 +1,7 @@
 class ChatRoom {
   final String id;
-  final String text;
+  final String finalMessage;
+
   final String? photoUrl;
   final DateTime time;
   final String fromUserId;
@@ -8,7 +9,7 @@ class ChatRoom {
 
   ChatRoom(
       {required this.id,
-      required this.text,
+      required this.finalMessage,
       this.photoUrl,
       required this.time,
       required this.fromUserId,
@@ -16,7 +17,7 @@ class ChatRoom {
   factory ChatRoom.fromJson(dynamic data) {
     return ChatRoom(
       id: data["id"],
-      text: data["text"],
+      finalMessage: data["text"],
       photoUrl: data["photoUrl"],
       time: DateTime.parse(data["time"]),
       fromUserId: data["fromUserId"],
@@ -27,7 +28,7 @@ class ChatRoom {
   Map<String, dynamic> toJson() {
     return {
       "id": id,
-      "text": text,
+      "text": finalMessage,
       "photoUrl": photoUrl,
       "time": time.toIso8601String(),
       "fromUserId": fromUserId,
@@ -37,14 +38,14 @@ class ChatRoom {
 }
 
 class ChatRoomParams {
-  final String text;
+  final String finalMessage;
   final String? photoUrl;
 
   final String fromUserId;
   final String toUserId;
 
   ChatRoomParams(
-      {required this.text,
+      {required this.finalMessage,
       this.photoUrl,
       required this.fromUserId,
       required this.toUserId});
@@ -54,11 +55,11 @@ class ChatRoomParams {
       required String formUserId,
       required String toUserId}) {
     return ChatRoomParams(
-        text: text, fromUserId: formUserId, toUserId: toUserId);
+        finalMessage: text, fromUserId: formUserId, toUserId: toUserId);
   }
   Map<String, dynamic> toCreate() {
     return {
-      "text": text,
+      "text": finalMessage,
       "photoUrl": photoUrl,
       "fromUserId": fromUserId,
       "toUserId": toUserId,

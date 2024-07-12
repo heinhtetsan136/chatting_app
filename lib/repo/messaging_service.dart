@@ -24,18 +24,32 @@ class MessagingService {
     }
   }
 
-  Future<Result> SendMessage(ChatRoomParams message) async {
-    final payload = message.toCreate();
+  Future<Result> SendMessage(ChatRoomParams room, String message) async {
+    final payload = room.toCreate();
 
     return _try(() async {
       final user = _authService.currentUser;
       if (user == null) {
         return const Result(error: GeneralError("User not found"));
       }
-      final doc = _db.collection("messages").doc(message.toUserId);
+      List<String> keyFormatter = [room.toUserId, room.fromUserId];
+      keyFormatter.sort();
+      final String key = keyFormatter.join("_");
+      print("key $key");
+      final doc = _db.collection("chatRoom").doc(key);
       payload.addEntries({MapEntry("id", doc.id)});
-
-      await doc.set(payload);
+      final snap = await doc.get();
+      if (snap.exists) {
+        print("exist is true");
+        await doc
+            .collection("messages")
+            .add({"message": message, "fromUserId": user.uid});
+        return const Result(data: ());
+      }
+      await doc.set(payload, SetOptions(merge: true));
+      await doc
+          .collection("messages")
+          .add({"message": message, "fromUserId": user.uid});
       return const Result(data: ());
     });
   }
@@ -46,25 +60,40 @@ class MessagingService {
       if (user == null) {
         return const Result(error: GeneralError("User not found"));
       }
-      final doc = _db
-          .collection("messages")
-          .where("toUserId", isEqualTo: user.uid)
-          .where("fromUserId", isEqualTo: other.uid);
+      List<String> keyFormatter = [other.uid, user.uid];
+      keyFormatter.sort();
+      final String key = keyFormatter.join("_");
+      print("get Key $key");
+      final db = _db.collection("chatRoom").doc(key);
+      final doc = db.collection("messages").where("id", isEqualTo: key);
       final snapshot = await doc.get();
-      print("snapshot is $snapshot.docs");
+      print("snapshot is ${snapshot.docs}docs");
       final List<ChatRoom> contactUser = [];
       for (var element in snapshot.docs) {
-        final user = ChatRoom.fromJson(element.data());
-        contactUser.add(user);
+        final message = ChatRoom.fromJson(element.data());
+        contactUser.add(message);
       }
+      print("contactUser is $contactUser");
       return Result(data: contactUser);
     });
   }
 
-  void contactListener(void Function(ChatRoom) message) {
-    _messagestream = _db.collection("messages").snapshots().listen((event) {
-      final user = ChatRoom.fromJson(event.docs.first.data());
-      message(user);
+  void contactListener(void Function(ChatRoom) message, ContactUser other) {
+    List<String> keyFormatter = [other.uid, _authService.currentUser!.uid];
+    keyFormatter.sort();
+    final String key = keyFormatter.join("_");
+    _messagestream = _db
+        .collection("chatRoom")
+        .doc(key)
+        .collection("messages")
+        .snapshots()
+        .listen((event) {
+      print("event is ${event.docs}");
+      if (event.docs.isNotEmpty) {
+        final user = ChatRoom.fromJson(event.docs.first.data());
+        print("stream User $user");
+        message(user);
+      }
     });
   }
 

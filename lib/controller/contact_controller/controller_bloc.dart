@@ -12,23 +12,26 @@ class ContactBloc extends Bloc<ContactBaseEvent, ContactBaseState> {
   final AuthService _auth = Injection.get<AuthService>();
   final FireStoreService db = Injection.get<FireStoreService>();
   final List<ContactUser> posts = [];
+
   ContactBloc() : super(const ContactInitialState([])) {
+    db.contactListener(_contactListener);
+
     on<RefreshContactEvent>(_refreshContactEventListener);
     on<GetContactEvent>(_getContactEventListener);
 
     on<NewContactEvent>(_newContactEventListener);
-    void contactListener(ContactUser post) {
-      final copied = state.posts.toList();
-      final index = copied.indexOf(post);
-      if (index == -1) {
-        copied.add(post);
-      } else {
-        copied[index] = post;
-      }
-      add(NewContactEvent(copied));
-    }
 
     add(GetContactEvent());
+  }
+  void _contactListener(ContactUser post) {
+    final copied = state.posts.toList();
+    final index = copied.indexOf(post);
+    if (index == -1) {
+      copied.add(post);
+    } else {
+      copied[index] = post;
+    }
+    add(NewContactEvent(copied));
   }
 
   FutureOr<void> _newContactEventListener(event, emit) async {

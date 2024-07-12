@@ -35,7 +35,7 @@ class FireStoreService {
       if (user == null) {
         return const Result(error: GeneralError("User not found"));
       }
-      final doc = db.collection("users");
+      final doc = db.collection("users").where("uid", isNotEqualTo: user.uid);
       final snapshot = await doc.get();
       print("snapshot is $snapshot.docs");
       final List<ContactUser> contactUser = [];

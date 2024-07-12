@@ -100,6 +100,7 @@ class SettingPage extends StatelessWidget {
 
 Future<void> _logout() async {
   await Injection<AuthService>().signOut();
+  StarlightUtils.pop();
 }
 
 class LogoutButton extends StatelessWidget {

@@ -6,5 +6,6 @@ class RouteNames {
       updateUserName = "/profilePage/updateName",
       updateEmail = "/profilePage/updateEmail",
       updatePassword = "/profilePage/updatePassword",
-      profile = "/profilePage";
+      profile = "/profilePage",
+      chatRoom = "/chatRoom";
 }

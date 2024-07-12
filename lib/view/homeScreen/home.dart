@@ -2,8 +2,8 @@ import 'package:blca_project_app/controller/home_controller/home_controller_bloc
 import 'package:blca_project_app/controller/home_controller/home_controller_event.dart';
 import 'package:blca_project_app/controller/home_controller/home_controller_state.dart';
 import 'package:blca_project_app/route/route.dart';
+import 'package:blca_project_app/view/contact_screen.dart';
 import 'package:blca_project_app/view/homeScreen/post_screen.dart';
-import 'package:blca_project_app/view/message_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:starlight_utils/starlight_utils.dart';
@@ -22,7 +22,15 @@ class HomeScreen extends StatelessWidget {
         }
       },
       child: Scaffold(
-          appBar: AppBar(),
+          appBar: AppBar(
+            actions: [
+              IconButton(
+                  onPressed: () {
+                    StarlightUtils.pushNamed(RouteNames.settingPage);
+                  },
+                  icon: const Icon(Icons.settings))
+            ],
+          ),
           drawer: Drawer(
             child: ListView(
               children: [

@@ -1,6 +1,7 @@
 import 'package:blca_project_app/controller/contact_controller/contact_event.dart';
 import 'package:blca_project_app/controller/contact_controller/contact_state.dart';
 import 'package:blca_project_app/controller/contact_controller/controller_bloc.dart';
+import 'package:blca_project_app/route/route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:starlight_utils/starlight_utils.dart';
@@ -69,6 +70,10 @@ class HomePage extends StatelessWidget {
                       itemCount: state.posts.length,
                       itemBuilder: (_, i) {
                         return MessagePost(
+                            onTap: () {
+                              StarlightUtils.pushNamed(RouteNames.chatRoom,
+                                  arguments: state.posts[i]);
+                            },
                             name: state.posts[i].email,
                             message: "abacajfkjaljfkj");
                       }),
@@ -84,49 +89,57 @@ class HomePage extends StatelessWidget {
 
 class MessagePost extends StatelessWidget {
   final String name, message;
-  const MessagePost({super.key, required this.name, required this.message});
+  final void Function() onTap;
+  const MessagePost(
+      {super.key,
+      required this.name,
+      required this.message,
+      required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final double width = context.width;
     final double height = context.height * 0.1;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 10),
-        child: SizedBox(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  const CircleAvatar(
-                    radius: 25,
-                    child: Icon(Icons.person),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 10.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(name),
-                        Text(message),
-                      ],
+    return GestureDetector(
+      onTap: onTap,
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 10),
+          child: SizedBox(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    const CircleAvatar(
+                      radius: 25,
+                      child: Icon(Icons.person),
                     ),
-                  ),
-                ],
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 4.0),
-                child: Container(
-                  decoration: const BoxDecoration(
-                      shape: BoxShape.circle, color: Colors.green),
-                  width: 16,
-                  height: 16,
+                    Padding(
+                      padding: const EdgeInsets.only(left: 10.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(name),
+                          Text(message),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
+                Padding(
+                  padding: const EdgeInsets.only(top: 4.0),
+                  child: Container(
+                    decoration: const BoxDecoration(
+                        shape: BoxShape.circle, color: Colors.green),
+                    width: 16,
+                    height: 16,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

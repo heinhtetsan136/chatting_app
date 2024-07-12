@@ -8,15 +8,7 @@ class PostScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        actions: [
-          IconButton(
-              onPressed: () {
-                StarlightUtils.pushNamed(RouteNames.settingPage);
-              },
-              icon: const Icon(Icons.settings))
-        ],
-      ),
+     
     );
   }
 }

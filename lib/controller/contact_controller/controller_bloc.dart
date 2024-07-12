@@ -24,6 +24,9 @@ class ContactBloc extends Bloc<ContactBaseEvent, ContactBaseState> {
     add(GetContactEvent());
   }
   void _contactListener(ContactUser post) {
+    if (post.uid == _auth.currentUser?.uid) {
+      return;
+    }
     final copied = state.posts.toList();
     final index = copied.indexOf(post);
     if (index == -1) {

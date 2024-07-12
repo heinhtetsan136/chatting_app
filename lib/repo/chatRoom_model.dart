@@ -1,12 +1,10 @@
-import 'package:blca_project_app/repo/user_model.dart';
-
 class ChatRoom {
   final String id;
   final String text;
   final String? photoUrl;
   final DateTime time;
   final String fromUserId;
-  final ContactUser toUserId;
+  final String toUserId;
 
   ChatRoom(
       {required this.id,

@@ -44,6 +44,7 @@ class ChatRoom<T extends ContactUser> extends StatelessWidget {
               child: Container(
                 child: BlocBuilder<ChatRoomBloc, ChatRoomBaseState>(
                     builder: (_, state) {
+                  print("state is $state");
                   if (state is ChatRoomLoadingState) {
                     return const Center(
                       child: CircularProgressIndicator(),
@@ -54,6 +55,7 @@ class ChatRoom<T extends ContactUser> extends StatelessWidget {
                       return const SizedBox(height: 10);
                     },
                     itemBuilder: (_, i) {
+                      print("messages ${state.message[i].text}");
                       return Align(
                         alignment: Alignment.centerLeft,
                         child: DecoratedBox(
@@ -64,7 +66,7 @@ class ChatRoom<T extends ContactUser> extends StatelessWidget {
                           child: Padding(
                             padding: const EdgeInsets.all(8.0),
                             child: Text(
-                              state.message[i].message,
+                              state.message[i].text,
                               style: const TextStyle(),
                             ),
                           ),
@@ -85,6 +87,7 @@ class ChatRoom<T extends ContactUser> extends StatelessWidget {
                   SizedBox(
                       width: context.width * 0.8,
                       child: TextFormField(
+                        focusNode: bloc.focusNode,
                         controller: bloc.textController,
                         decoration: InputDecoration(
                             border: OutlineInputBorder(

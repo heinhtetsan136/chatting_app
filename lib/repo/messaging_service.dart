@@ -5,7 +5,6 @@ import 'package:blca_project_app/model/error.dart';
 import 'package:blca_project_app/model/result.dart';
 import 'package:blca_project_app/repo/authService.dart';
 import 'package:blca_project_app/repo/chatRoom_model.dart';
-import 'package:blca_project_app/repo/message.dart';
 import 'package:blca_project_app/repo/user_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -62,10 +61,14 @@ class MessagingService {
     });
   }
 
-  void contactListener(void Function(Messages) message) {
+  void contactListener(void Function(ChatRoom) message) {
     _messagestream = _db.collection("messages").snapshots().listen((event) {
-      final user = Messages.fromJson(event.docs.first.data());
+      final user = ChatRoom.fromJson(event.docs.first.data());
       message(user);
     });
+  }
+
+  dispose() {
+    _messagestream?.cancel();
   }
 }

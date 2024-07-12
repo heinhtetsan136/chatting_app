@@ -1,4 +1,4 @@
-import 'package:blca_project_app/repo/message.dart';
+import 'package:blca_project_app/repo/chatRoom_model.dart';
 
 abstract class ChatRoomBaseEvent {
   const ChatRoomBaseEvent();
@@ -13,6 +13,6 @@ class RefreshMessageEvent extends ChatRoomBaseEvent {
 }
 
 class NewMessageEvent extends ChatRoomBaseEvent {
-  final List<Messages> post;
+  final List<ChatRoom> post;
   NewMessageEvent(this.post);
 }

@@ -21,71 +21,75 @@ class ChatRoomBloc extends Bloc<ChatRoomBaseEvent, ChatRoomBaseState> {
       StreamController<List<ChatRoom>>.broadcast();
   ChatRoomBloc() : super(const ChatRoomInitialState([])) {
     final List<ChatRoom> room = [];
-    void chatRoomParser(event) {
-      for (var i in event.docs) {
-        final model = ChatRoom.fromJson(i.data());
-        final index = room.indexOf(model);
-        if (index == -1) {
-          room.add(model);
-        } else {
-          room[index] = model;
-        }
+    // void chatRoomParser(event) {
+    //   for (var i in event.docs) {
+    //     final model = ChatRoom.fromJson(i.data());
+    //     final index = room.indexOf(model);
+    //     if (index == -1) {
+    //       room.add(model);
+    //     } else {
+    //       room[index] = model;
+    //     }
+    //   }
+    //   roomStream.add(room);
+    // }
+
+    // final doc = chatRoomService.db.collection("ChatRoom");
+    // final result =
+    //     doc.where("member", arrayContains: _authService.currentUser?.uid);
+
+    // _chatroomStream = result.snapshots().listen(chatRoomParser);
+    on<NewChatRoomEvent>((event, emit) {
+      print("new Message Event");
+      emit(ChatRoomLoadedState(event.post));
+    });
+    on<GetChatRoomEvent>((event, emit) async {
+      print("Get Message Event");
+      if (state is ChatRoomLoadingState || state is ChatRoomSoftLoadingState) {
+        return;
       }
-      roomStream.add(room);
-    }
+      print("this is get ${state.message}");
+      final messages = state.message;
+      if (messages.isEmpty) {
+        emit(ChatRoomLoadingState(messages));
+      } else {
+        emit(ChatRoomSoftLoadingState(messages));
+      }
+      final result = await chatRoomService.getChatRoom();
 
-    _chatroomStream = chatRoomService.chatrooms().listen(chatRoomParser);
-    // on<NewChatRoomEvent>((event, emit) {
-    //   print("new Message Event");
-    //   emit(ChatRoomLoadedState(event.post));
-    // });
-    // on<GetChatRoomEvent>((event, emit) async {
-    //   print("Get Message Event");
-    //   if (state is ChatRoomLoadingState || state is ChatRoomSoftLoadingState) {
-    //     return;
-    //   }
-    //   print("this is get ${state.message}");
-    //   final messages = state.message;
-    //   if (messages.isEmpty) {
-    //     emit(ChatRoomLoadingState(messages));
-    //   } else {
-    //     emit(ChatRoomSoftLoadingState(messages));
-    //   }
-    //   final result = await _chatRoomService.getChatRoom();
-
-    //   if (result.hasError) {
-    //     emit(ChatRoomErrorState(result.error!.message, messages));
-    //   }
-    //   logger.i("this is get ${result.data}");
-    //   emit(ChatRoomLoadedState(result.data!));
-    // });
-    // on<RefreshChatRoomEvent>((event, emit) async {
-    //   print("refresh Message Event");
-    //   final messages = state.message;
-    //   if (messages.isEmpty) {
-    //     emit(ChatRoomLoadingState(messages));
-    //   }
-    //   final result = await _chatRoomService.getChatRoom();
-    //   if (result.hasError) {
-    //     emit(ChatRoomErrorState(result.error!.message, messages));
-    //   }
-    //   emit(ChatRoomLoadedState(result.data!));
-    // });
-    // add(GetChatRoomEvent());
-    // _chatRoomService.contactListener(contactListener);
+      if (result.hasError) {
+        emit(ChatRoomErrorState(result.error!.message, messages));
+      }
+      logger.i("this is get ${result.data}");
+      emit(ChatRoomLoadedState(result.data!));
+    });
+    on<RefreshChatRoomEvent>((event, emit) async {
+      print("refresh Message Event");
+      final messages = state.message;
+      if (messages.isEmpty) {
+        emit(ChatRoomLoadingState(messages));
+      }
+      final result = await chatRoomService.getChatRoom();
+      if (result.hasError) {
+        emit(ChatRoomErrorState(result.error!.message, messages));
+      }
+      emit(ChatRoomLoadedState(result.data!));
+    });
+    add(GetChatRoomEvent());
+    chatRoomService.contactListener(contactListener);
   }
-  // void contactListener(ChatRoom room) {
-  //   final copied = state.message.toList();
-  //   print("new message $copied");
-  //   final index = copied.indexOf(room);
-  //   if (index == -1) {
-  //     copied.add(room);
-  //   } else {
-  //     copied[index] = room;
-  //   }
-  //   print("new message addd $copied");
-  //   add(NewChatRoomEvent(copied));
-  // }
+  void contactListener(ChatRoom room) {
+    final copied = state.message.toList();
+    print("new message $copied");
+    final index = copied.indexOf(room);
+    if (index == -1) {
+      copied.add(room);
+    } else {
+      copied[index] = room;
+    }
+    print("new message addd $copied");
+    add(NewChatRoomEvent(copied));
+  }
 
   void chatRoomCreate(ContactUser other) async {
     final chatRoomParams = ChatRoomParams.toCreate(

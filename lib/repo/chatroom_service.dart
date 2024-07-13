@@ -10,8 +10,9 @@ import 'package:blca_project_app/repo/user_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ChatRoomService {
+  StreamSubscription? chatRoomStream;
   final AuthService _authService = Injection.get<AuthService>();
-  final FirebaseFirestore _db = Injection.get<FirebaseFirestore>();
+  final FirebaseFirestore db = Injection.get<FirebaseFirestore>();
   Future<Result> _try(Future<Result> Function() callback) async {
     try {
       final result = await callback();
@@ -36,7 +37,7 @@ class ChatRoomService {
         return const Result(error: GeneralError("User not found"));
       }
 
-      final doc = _db.collection("ChatRoom").doc();
+      final doc = db.collection("ChatRoom").doc();
       final result = await getChatRoom();
       payload.addEntries({MapEntry("id", doc.id)});
       print("create payload $payload");
@@ -52,7 +53,7 @@ class ChatRoomService {
         return const Result(error: GeneralError("User not found"));
       }
 
-      final doc = _db.collection("ChatRoom");
+      final doc = db.collection("ChatRoom");
       final checkOne = await doc
           .where("fromUserId", isEqualTo: user.uid)
           .where("toUserId", isEqualTo: other.uid)
@@ -78,7 +79,7 @@ class ChatRoomService {
       if (user == null) {
         return const Result(error: GeneralError("User not found"));
       }
-      final doc = _db.collection("ChatRoom");
+      final doc = db.collection("ChatRoom");
       final result = await doc.where("member", arrayContains: user.uid).get();
       List<ChatRoom> rooms = [];
       for (var room in result.docs) {
@@ -91,21 +92,23 @@ class ChatRoomService {
   }
 
   Stream chatrooms() {
-    final doc = _db.collection("ChatRoom");
+    final doc = db.collection("ChatRoom");
     final result =
         doc.where("member", arrayContains: _authService.currentUser?.uid);
     return result.snapshots();
   }
-  // void contactListener(void Function(ChatRoom) messages) async {
-  //   final doc = _db.collection("ChatRoom");
-  //   final result =
-  //       doc.where("member", arrayContains: _authService.currentUser?.uid);
-  //   _chatroomStream = result.snapshots().listen((event) {
-  //     print("event is ${event.docs}");
-  //     if (event.docs.isNotEmpty) {
-  //       final message = ChatRoom.fromJson(event.docs.first.data());
-  //       print("stream User ${message.id}");
-  //       messages(message);
-  //     }
-  //   });
+
+  void contactListener(void Function(ChatRoom) messages) async {
+    final doc = db.collection("ChatRoom");
+    final result =
+        doc.where("member", arrayContains: _authService.currentUser?.uid);
+    chatRoomStream = result.snapshots().listen((event) {
+      print("event is ${event.docs}");
+      if (event.docs.isNotEmpty) {
+        final message = ChatRoom.fromJson(event.docs.first.data());
+        print("stream User ${message.id}");
+        messages(message);
+      }
+    });
+  }
 }

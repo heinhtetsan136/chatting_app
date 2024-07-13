@@ -1,4 +1,6 @@
 import 'package:blca_project_app/controller/chat_room/chat_room_sendMessage_bloc.dart/chat_room_bloc.dart';
+import 'package:blca_project_app/controller/chat_room/chat_room_sendMessage_bloc.dart/chat_room_event.dart';
+import 'package:blca_project_app/controller/chat_room/chat_room_sendMessage_bloc.dart/chat_room_state.dart';
 import 'package:blca_project_app/logger.dart';
 import 'package:blca_project_app/view/contact_screen.dart';
 import 'package:flutter/material.dart';
@@ -11,33 +13,40 @@ class MessagingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final chatroomBloc = context.read<ChatRoomBloc>();
     return Scaffold(
-        body: StreamBuilder(
-            key: UniqueKey(),
-            stream: chatroomBloc.roomStream.stream,
-            builder: (_, snap) {
-              final state = snap.data;
-              logger.i(state);
-              if (snap.connectionState == ConnectionState.waiting) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
-              }
-              if (snap.data == null) {
-                return const Center(
-                  child: Text("No Data"),
-                );
-              }
-              return ListView.builder(
-                itemBuilder: (_, i) {
-                  logger.i("object is ${state?[i].toUserName}");
-                  print("object is ${state?[i].toUserName}");
-                  return ChatRoom(
-                      name: state?[i].toUserName ?? "",
-                      message: "sssssss",
-                      onTap: () {});
-                },
-                itemCount: state?.length ?? 0,
-              );
-            }));
+      body: BlocBuilder<ChatRoomBloc, ChatRoomBaseState>(builder: (_, state) {
+        final post = state.message;
+        if (state is ChatRoomLoadingState) {
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        }
+        if (post.isEmpty) {
+          return Center(
+              child: TextButton(
+            onPressed: () {
+              chatroomBloc.add(RefreshChatRoomEvent());
+            },
+            child: const Text("No Data"),
+          ));
+        }
+
+        return RefreshIndicator(
+          onRefresh: () async {
+            chatroomBloc.add(RefreshChatRoomEvent());
+          },
+          child: ListView.builder(
+            itemBuilder: (_, i) {
+              logger.i("object is ${state.message[i].toUserName}");
+              print("object is ${state.message[i].toUserName}");
+              return ChatRoom(
+                  name: state.message[i].toUserName ?? "",
+                  message: "sssssss",
+                  onTap: () {});
+            },
+            itemCount: state.message.length,
+          ),
+        );
+      }),
+    );
   }
 }

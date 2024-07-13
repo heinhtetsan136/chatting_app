@@ -4,15 +4,15 @@ abstract class ChatRoomBaseEvent {
   const ChatRoomBaseEvent();
 }
 
-class GetMessageEvent extends ChatRoomBaseEvent {
-  GetMessageEvent();
+class GetChatRoomEvent extends ChatRoomBaseEvent {
+  GetChatRoomEvent();
 }
 
-class RefreshMessageEvent extends ChatRoomBaseEvent {
-  RefreshMessageEvent();
+class RefreshChatRoomEvent extends ChatRoomBaseEvent {
+  RefreshChatRoomEvent();
 }
 
-class NewMessageEvent extends ChatRoomBaseEvent {
+class NewChatRoomEvent extends ChatRoomBaseEvent {
   final List<ChatRoom> post;
-  NewMessageEvent(this.post);
+  NewChatRoomEvent(this.post);
 }

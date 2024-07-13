@@ -1,4 +1,5 @@
 import 'package:blca_project_app/repo/chatRoom_model.dart';
+import 'package:blca_project_app/repo/message.dart';
 
 abstract class ChatRoomBaseState {
   final List<ChatRoom> message;

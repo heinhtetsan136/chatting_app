@@ -2,6 +2,7 @@ import 'package:blca_project_app/controller/home_controller/home_controller_bloc
 import 'package:blca_project_app/controller/home_controller/home_controller_event.dart';
 import 'package:blca_project_app/controller/home_controller/home_controller_state.dart';
 import 'package:blca_project_app/route/route.dart';
+import 'package:blca_project_app/view/chat_room_screen.dart';
 import 'package:blca_project_app/view/contact_screen.dart';
 import 'package:blca_project_app/view/homeScreen/post_screen.dart';
 import 'package:flutter/material.dart';
@@ -54,7 +55,7 @@ class HomeScreen extends StatelessWidget {
             controller: homePageBloc.controller,
             itemBuilder: (_, i) {
               return [
-                const HomePage(),
+                const MessagingScreen(),
                 const HomePage(),
                 const PostScreen(),
               ][i];

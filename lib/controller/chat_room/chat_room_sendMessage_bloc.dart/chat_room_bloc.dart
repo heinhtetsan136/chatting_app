@@ -1,87 +1,114 @@
+import 'dart:async';
+
 import 'package:blca_project_app/controller/chat_room/chat_room_sendMessage_bloc.dart/chat_room_event.dart';
 import 'package:blca_project_app/controller/chat_room/chat_room_sendMessage_bloc.dart/chat_room_state.dart';
 import 'package:blca_project_app/injection.dart';
+import 'package:blca_project_app/logger.dart';
 import 'package:blca_project_app/repo/authService.dart';
 import 'package:blca_project_app/repo/chatRoom_model.dart';
-import 'package:blca_project_app/repo/messaging_service.dart';
+import 'package:blca_project_app/repo/chatroom_service.dart';
 import 'package:blca_project_app/repo/user_model.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ChatRoomBloc extends Bloc<ChatRoomBaseEvent, ChatRoomBaseState> {
-  final ContactUser otherUser;
   final AuthService _authService = Injection.get<AuthService>();
+  StreamSubscription? _chatroomStream;
   final TextEditingController textController = TextEditingController();
   final FocusNode focusNode = FocusNode();
-  final MessagingService _messagingService = Injection.get<MessagingService>();
-  ChatRoomBloc(this.otherUser) : super(const ChatRoomInitialState([])) {
-    _messagingService.contactListener(contactListener, otherUser);
-    on<NewMessageEvent>((event, emit) {
-      print("new Message Event");
-      emit(ChatRoomLoadedState(event.post));
-    });
-    on<GetMessageEvent>((event, emit) async {
-      print("Get Message Event");
-      if (state is ChatRoomLoadingState || state is ChatRoomSoftLoadingState) {
-        return;
+  final ChatRoomService chatRoomService = Injection.get<ChatRoomService>();
+  final StreamController<List<ChatRoom>> roomStream =
+      StreamController<List<ChatRoom>>.broadcast();
+  ChatRoomBloc() : super(const ChatRoomInitialState([])) {
+    final List<ChatRoom> room = [];
+    void chatRoomParser(event) {
+      for (var i in event.docs) {
+        final model = ChatRoom.fromJson(i.data());
+        final index = room.indexOf(model);
+        if (index == -1) {
+          room.add(model);
+        } else {
+          room[index] = model;
+        }
       }
-      print("this is get ${state.message}");
-      final messages = state.message;
-      if (messages.isEmpty) {
-        emit(ChatRoomLoadingState(messages));
-      } else {
-        emit(ChatRoomSoftLoadingState(messages));
-      }
-      final result = await _messagingService.getMessage(otherUser);
-      print("chat bloc result ${result.data}");
-      if (result.hasError) {
-        emit(ChatRoomErrorState(result.error!.message, messages));
-      }
-      emit(ChatRoomLoadedState(result.data!));
-    });
-    on<RefreshMessageEvent>((event, emit) async {
-      print("refresh Message Event");
-      final messages = state.message;
-      if (messages.isEmpty) {
-        emit(ChatRoomLoadingState(messages));
-      }
-      final result = await _messagingService.getMessage(otherUser);
-      if (result.hasError) {
-        emit(ChatRoomErrorState(result.error!.message, messages));
-      }
-      emit(ChatRoomLoadedState(result.data!));
-    });
-    add(GetMessageEvent());
-  }
-  void contactListener(ChatRoom post) {
-    final copied = state.message.toList();
-    print("new message $copied");
-
-    copied.add(post);
-    print("new message addd $copied");
-    add(NewMessageEvent(copied));
-  }
-
-  void sendMessage() async {
-    focusNode.unfocus();
-
-    if (textController.text.isEmpty) {
-      return;
+      roomStream.add(room);
     }
 
-    final result = await _messagingService.SendMessage(
-        ChatRoomParams(
-            finalMessage: textController.text,
-            fromUserId: _authService.currentUser!.uid,
-            toUserId: otherUser.uid),
-        textController.text);
+    _chatroomStream = chatRoomService.chatrooms().listen(chatRoomParser);
+    // on<NewChatRoomEvent>((event, emit) {
+    //   print("new Message Event");
+    //   emit(ChatRoomLoadedState(event.post));
+    // });
+    // on<GetChatRoomEvent>((event, emit) async {
+    //   print("Get Message Event");
+    //   if (state is ChatRoomLoadingState || state is ChatRoomSoftLoadingState) {
+    //     return;
+    //   }
+    //   print("this is get ${state.message}");
+    //   final messages = state.message;
+    //   if (messages.isEmpty) {
+    //     emit(ChatRoomLoadingState(messages));
+    //   } else {
+    //     emit(ChatRoomSoftLoadingState(messages));
+    //   }
+    //   final result = await _chatRoomService.getChatRoom();
+
+    //   if (result.hasError) {
+    //     emit(ChatRoomErrorState(result.error!.message, messages));
+    //   }
+    //   logger.i("this is get ${result.data}");
+    //   emit(ChatRoomLoadedState(result.data!));
+    // });
+    // on<RefreshChatRoomEvent>((event, emit) async {
+    //   print("refresh Message Event");
+    //   final messages = state.message;
+    //   if (messages.isEmpty) {
+    //     emit(ChatRoomLoadingState(messages));
+    //   }
+    //   final result = await _chatRoomService.getChatRoom();
+    //   if (result.hasError) {
+    //     emit(ChatRoomErrorState(result.error!.message, messages));
+    //   }
+    //   emit(ChatRoomLoadedState(result.data!));
+    // });
+    // add(GetChatRoomEvent());
+    // _chatRoomService.contactListener(contactListener);
+  }
+  // void contactListener(ChatRoom room) {
+  //   final copied = state.message.toList();
+  //   print("new message $copied");
+  //   final index = copied.indexOf(room);
+  //   if (index == -1) {
+  //     copied.add(room);
+  //   } else {
+  //     copied[index] = room;
+  //   }
+  //   print("new message addd $copied");
+  //   add(NewChatRoomEvent(copied));
+  // }
+
+  void chatRoomCreate(ContactUser other) async {
+    final chatRoomParams = ChatRoomParams.toCreate(
+        toUserName: other.email,
+        text: " ",
+        member: [_authService.currentUser!.uid, other.uid],
+        formUserId: _authService.currentUser!.uid,
+        toUserId: other.uid);
+    final result = await chatRoomService.checkChatRoom(other);
+    logger.wtf("result bloc is ${result.data}");
+    if (result.data == false) {
+      await chatRoomService.createChatRoom(chatRoomParams);
+    }
+    return;
   }
 
   @override
   Future<void> close() {
+    logger.i("chat Room Bloc Close");
     textController.dispose();
     focusNode.dispose();
-    _messagingService.dispose();
+    roomStream.close();
+    _chatroomStream?.cancel();
     // TODO: implement close
     return super.close();
   }

@@ -11,7 +11,7 @@ import 'package:blca_project_app/repo/user_model.dart';
 import 'package:blca_project_app/route/route.dart';
 import 'package:blca_project_app/view/auth/login_page.dart';
 import 'package:blca_project_app/view/auth/sign_up_page.dart';
-import 'package:blca_project_app/view/chat_room_screen.dart';
+import 'package:blca_project_app/view/chatting_screen.dart';
 import 'package:blca_project_app/view/homeScreen/home.dart';
 import 'package:blca_project_app/view/setting/profile_page.dart';
 import 'package:blca_project_app/view/setting/setting_page.dart';
@@ -40,7 +40,7 @@ Route? router(RouteSettings settings) {
       return _protectedRoute(
           incomingRoute,
           BlocProvider(
-              create: (_) => ChatRoomBloc(otherUser), child: const ChatRoom()),
+              create: (_) => ChatRoomBloc(), child: const ChatRoomScreen()),
           settings);
     case RouteNames.signUpPage:
       return _route(
@@ -54,6 +54,7 @@ Route? router(RouteSettings settings) {
       return _protectedRoute(
           incomingRoute,
           MultiBlocProvider(providers: [
+            BlocProvider(create: (_) => ChatRoomBloc()),
             BlocProvider(create: (_) => HomePageBloc()),
             BlocProvider(create: (_) => ContactBloc()),
           ], child: const HomeScreen()),

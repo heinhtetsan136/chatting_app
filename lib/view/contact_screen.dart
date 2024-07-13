@@ -1,3 +1,4 @@
+import 'package:blca_project_app/controller/chat_room/chat_room_sendMessage_bloc.dart/chat_room_bloc.dart';
 import 'package:blca_project_app/controller/contact_controller/contact_event.dart';
 import 'package:blca_project_app/controller/contact_controller/contact_state.dart';
 import 'package:blca_project_app/controller/contact_controller/controller_bloc.dart';
@@ -12,6 +13,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final contactbloc = context.read<ContactBloc>();
+    final chattingbloc = context.read<ChatRoomBloc>();
     return Scaffold(
       appBar: AppBar(
         leading: TextButton(onPressed: () {}, child: const Text("Edit")),
@@ -69,8 +71,9 @@ class HomePage extends StatelessWidget {
                       },
                       itemCount: state.posts.length,
                       itemBuilder: (_, i) {
-                        return MessagePost(
+                        return ChatRoom(
                             onTap: () {
+                              chattingbloc.chatRoomCreate(state.posts[i]);
                               StarlightUtils.pushNamed(RouteNames.chatRoom,
                                   arguments: state.posts[i]);
                             },
@@ -87,10 +90,10 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class MessagePost extends StatelessWidget {
+class ChatRoom extends StatelessWidget {
   final String name, message;
   final void Function() onTap;
-  const MessagePost(
+  const ChatRoom(
       {super.key,
       required this.name,
       required this.message,

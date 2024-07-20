@@ -1,3 +1,6 @@
+import 'package:blca_project_app/logger.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class ChatRoom {
   final String id;
   final String finalMessage;
@@ -7,8 +10,10 @@ class ChatRoom {
   final List member;
   final String? toUserName;
   final String fromUserId;
+  final Timestamp updated_At;
 
   ChatRoom({
+    required this.updated_At,
     required this.id,
     required this.member,
     required this.finalMessage,
@@ -19,7 +24,9 @@ class ChatRoom {
     required this.toUserId,
   });
   factory ChatRoom.fromJson(dynamic data) {
+    logger.wtf(data["updated_At"]);
     return ChatRoom(
+      updated_At: data["updated_At"],
       id: data["id"],
       finalMessage: data["text"],
       photoUrl: data["photoUrl"],
@@ -30,6 +37,15 @@ class ChatRoom {
       toUserName: data["toUserName"] ?? "this is username",
     );
   }
+  @override
+  bool operator ==(covariant ChatRoom other) {
+    // TODO: implement ==
+    return id == other.id;
+  }
+
+  @override
+  // TODO: implement hashCode
+  int get hashCode => id.hashCode;
 
   Map<String, dynamic> toJson() {
     return {
@@ -40,7 +56,8 @@ class ChatRoom {
       "time": time.toIso8601String(),
       "fromUserId": fromUserId,
       "toUserId": toUserId,
-      "toUserName": toUserName
+      "toUserName": toUserName,
+      "updated_At": updated_At,
     };
   }
 }
@@ -52,6 +69,7 @@ class ChatRoomParams {
   final String toUserName;
   final String fromUserId;
   final String toUserId;
+  final Timestamp Updated_At;
 
   ChatRoomParams({
     required this.toUserId,
@@ -60,6 +78,7 @@ class ChatRoomParams {
     this.photoUrl,
     required this.fromUserId,
     required this.toUserName,
+    required this.Updated_At,
   });
   factory ChatRoomParams.toCreate({
     required String text,
@@ -67,8 +86,10 @@ class ChatRoomParams {
     required String formUserId,
     required String toUserId,
     required String toUserName,
+    required Timestamp Updated_At,
   }) {
     return ChatRoomParams(
+        Updated_At: Updated_At,
         toUserName: toUserName,
         finalMessage: text,
         fromUserId: formUserId,
@@ -83,7 +104,8 @@ class ChatRoomParams {
       "fromUserId": fromUserId,
       "time": DateTime.now().toIso8601String(),
       "toUserId": toUserId,
-      "toUserName": toUserName
+      "toUserName": toUserName,
+      "updated_At": Updated_At
     };
   }
 }

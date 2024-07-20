@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:blca_project_app/controller/chat_room/chat_room_sendMessage_bloc.dart/chat_room_event.dart';
-import 'package:blca_project_app/controller/chat_room/chat_room_sendMessage_bloc.dart/chat_room_state.dart';
+import 'package:blca_project_app/controller/chat_room/chat_room_list_controller/chat_room_list_event.dart';
+import 'package:blca_project_app/controller/chat_room/chat_room_list_controller/chat_room_list_state.dart';
 import 'package:blca_project_app/injection.dart';
 import 'package:blca_project_app/logger.dart';
 import 'package:blca_project_app/repo/authService.dart';
@@ -11,7 +11,7 @@ import 'package:blca_project_app/repo/user_model.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-class ChatRoomBloc extends Bloc<ChatRoomBaseEvent, ChatRoomBaseState> {
+class ChatRoomListBloc extends Bloc<ChatRoomBaseEvent, ChatRoomBaseState> {
   final AuthService _authService = Injection.get<AuthService>();
   StreamSubscription? _chatroomStream;
   final TextEditingController textController = TextEditingController();
@@ -19,7 +19,7 @@ class ChatRoomBloc extends Bloc<ChatRoomBaseEvent, ChatRoomBaseState> {
   final ChatRoomService chatRoomService = Injection.get<ChatRoomService>();
   final StreamController<List<ChatRoom>> roomStream =
       StreamController<List<ChatRoom>>.broadcast();
-  ChatRoomBloc() : super(const ChatRoomInitialState([])) {
+  ChatRoomListBloc() : super(const ChatRoomInitialState([])) {
     final List<ChatRoom> room = [];
     // void chatRoomParser(event) {
     //   for (var i in event.docs) {
@@ -55,12 +55,12 @@ class ChatRoomBloc extends Bloc<ChatRoomBaseEvent, ChatRoomBaseState> {
       } else {
         emit(ChatRoomSoftLoadingState(messages));
       }
-      final result = await chatRoomService.getChatRoom();
+      final result = await chatRoomService.getListOfChatRoom();
 
       if (result.hasError) {
         emit(ChatRoomErrorState(result.error!.message, messages));
       }
-      logger.i("this is get ${result.data}");
+
       emit(ChatRoomLoadedState(result.data!));
     });
     on<RefreshChatRoomEvent>((event, emit) async {
@@ -69,7 +69,7 @@ class ChatRoomBloc extends Bloc<ChatRoomBaseEvent, ChatRoomBaseState> {
       if (messages.isEmpty) {
         emit(ChatRoomLoadingState(messages));
       }
-      final result = await chatRoomService.getChatRoom();
+      final result = await chatRoomService.getListOfChatRoom();
       if (result.hasError) {
         emit(ChatRoomErrorState(result.error!.message, messages));
       }
@@ -80,10 +80,14 @@ class ChatRoomBloc extends Bloc<ChatRoomBaseEvent, ChatRoomBaseState> {
   }
   void contactListener(ChatRoom room) {
     final copied = state.message.toList();
+    if (copied.isEmpty) {
+      add(GetChatRoomEvent());
+      return;
+    }
     print("new message $copied");
     final index = copied.indexOf(room);
     if (index == -1) {
-      copied.add(room);
+      copied.insert(0, (room));
     } else {
       copied[index] = room;
     }
@@ -91,20 +95,7 @@ class ChatRoomBloc extends Bloc<ChatRoomBaseEvent, ChatRoomBaseState> {
     add(NewChatRoomEvent(copied));
   }
 
-  void chatRoomCreate(ContactUser other) async {
-    final chatRoomParams = ChatRoomParams.toCreate(
-        toUserName: other.email,
-        text: " ",
-        member: [_authService.currentUser!.uid, other.uid],
-        formUserId: _authService.currentUser!.uid,
-        toUserId: other.uid);
-    final result = await chatRoomService.checkChatRoom(other);
-    logger.wtf("result bloc is ${result.data}");
-    if (result.data == false) {
-      await chatRoomService.createChatRoom(chatRoomParams);
-    }
-    return;
-  }
+  void chatRoomCreate(ContactUser other) async {}
 
   @override
   Future<void> close() {

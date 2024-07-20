@@ -1,8 +1,11 @@
 import 'package:blca_project_app/repo/chatRoom_model.dart';
-import 'package:blca_project_app/repo/message.dart';
+import 'package:equatable/equatable.dart';
 
-abstract class ChatRoomBaseState {
+abstract class ChatRoomBaseState extends Equatable {
   final List<ChatRoom> message;
+  @override
+  // TODO: implement props
+  List<Object?> get props => message;
   const ChatRoomBaseState(this.message);
 }
 
@@ -24,5 +27,8 @@ class ChatRoomLoadedState extends ChatRoomBaseState {
 
 class ChatRoomErrorState extends ChatRoomBaseState {
   final String error;
+  @override
+  // TODO: implement props
+  List<Object?> get props => [...super.message, error];
   const ChatRoomErrorState(this.error, super.message);
 }

@@ -1,4 +1,8 @@
-import 'package:blca_project_app/controller/chat_room/chat_room_sendMessage_bloc.dart/chat_room_bloc.dart';
+import 'package:blca_project_app/controller/chat_room/chat_room_create_controller/chat_room_create_bloc.dart';
+import 'package:blca_project_app/controller/chat_room/chat_room_create_controller/chat_room_create_state.dart';
+import 'package:blca_project_app/controller/chat_room/chat_room_list_controller/chat_room_list_bloc.dart';
+import 'package:blca_project_app/controller/chatting/chatting_bloc.dart';
+import 'package:blca_project_app/controller/chatting/chatting_state.dart';
 import 'package:blca_project_app/controller/contact_controller/controller_bloc.dart';
 import 'package:blca_project_app/controller/home_controller/home_controller_bloc.dart';
 import 'package:blca_project_app/controller/login/login_bloc.dart';
@@ -7,12 +11,12 @@ import 'package:blca_project_app/controller/register/register_state.dart';
 import 'package:blca_project_app/controller/register/resgister_bloc.dart';
 import 'package:blca_project_app/injection.dart';
 import 'package:blca_project_app/repo/authService.dart';
-import 'package:blca_project_app/repo/user_model.dart';
+import 'package:blca_project_app/repo/chatRoom_model.dart';
 import 'package:blca_project_app/route/route.dart';
 import 'package:blca_project_app/view/auth/login_page.dart';
 import 'package:blca_project_app/view/auth/sign_up_page.dart';
-import 'package:blca_project_app/view/chatting_screen.dart';
 import 'package:blca_project_app/view/homeScreen/home.dart';
+import 'package:blca_project_app/view/messaging_screen.dart';
 import 'package:blca_project_app/view/setting/profile_page.dart';
 import 'package:blca_project_app/view/setting/setting_page.dart';
 import 'package:blca_project_app/view/setting/update_user_info.dart';
@@ -27,9 +31,9 @@ Route? router(RouteSettings settings) {
           incomingRoute,
           BlocProvider(create: (_) => LoginBloc(), child: const LoginPage()),
           settings);
-    case RouteNames.chatRoom:
-      final otherUser = settings.arguments;
-      if (otherUser is! ContactUser) {
+    case RouteNames.messaging:
+      final values = settings.arguments;
+      if (values is! ChatRoom) {
         return _route(
             const Scaffold(
                 body: Center(
@@ -40,7 +44,11 @@ Route? router(RouteSettings settings) {
       return _protectedRoute(
           incomingRoute,
           BlocProvider(
-              create: (_) => ChatRoomBloc(), child: const ChatRoomScreen()),
+              create: (_) =>
+                  ChattingBloc(ChattingInitialState(const []), values),
+              child: MessagingScreen(
+                chatRoom: values,
+              )),
           settings);
     case RouteNames.signUpPage:
       return _route(
@@ -54,7 +62,10 @@ Route? router(RouteSettings settings) {
       return _protectedRoute(
           incomingRoute,
           MultiBlocProvider(providers: [
-            BlocProvider(create: (_) => ChatRoomBloc()),
+            BlocProvider(create: (_) => ChatRoomListBloc()),
+            BlocProvider(
+                create: (_) =>
+                    ChatRoomCreateBloc(const ChatRoomCreateInitialState())),
             BlocProvider(create: (_) => HomePageBloc()),
             BlocProvider(create: (_) => ContactBloc()),
           ], child: const HomeScreen()),

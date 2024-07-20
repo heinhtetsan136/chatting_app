@@ -55,7 +55,7 @@ class HomeScreen extends StatelessWidget {
             controller: homePageBloc.controller,
             itemBuilder: (_, i) {
               return [
-                const MessagingScreen(),
+                const ChatRoomListScreen(),
                 const HomePage(),
                 const PostScreen(),
               ][i];

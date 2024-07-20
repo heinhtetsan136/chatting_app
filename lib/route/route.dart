@@ -7,5 +7,5 @@ class RouteNames {
       updateEmail = "/profilePage/updateEmail",
       updatePassword = "/profilePage/updatePassword",
       profile = "/profilePage",
-      chatRoom = "/chatRoom";
+      messaging = "/chatRoom";
 }

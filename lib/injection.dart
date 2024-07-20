@@ -1,6 +1,7 @@
 import 'package:blca_project_app/firebase_options.dart';
 import 'package:blca_project_app/repo/authService.dart';
 import 'package:blca_project_app/repo/chatroom_service.dart';
+import 'package:blca_project_app/repo/chattingService.dart';
 import 'package:blca_project_app/repo/firestoreService.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
@@ -40,4 +41,5 @@ Future<void> setUp() async {
       dispose: (instance) => instance.dispose());
   Injection.registerLazySingleton(() => FireStoreService());
   Injection.registerLazySingleton(() => ChatRoomService());
+  Injection.registerLazySingleton(() => Chattingservice());
 }

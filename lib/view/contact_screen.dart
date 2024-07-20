@@ -1,8 +1,13 @@
-import 'package:blca_project_app/controller/chat_room/chat_room_sendMessage_bloc.dart/chat_room_bloc.dart';
+import 'package:blca_project_app/controller/chat_room/chat_room_create_controller/chat_room_create_bloc.dart';
+import 'package:blca_project_app/controller/chat_room/chat_room_create_controller/chat_room_create_event.dart';
+import 'package:blca_project_app/controller/chat_room/chat_room_create_controller/chat_room_create_state.dart';
+import 'package:blca_project_app/controller/chat_room/chat_room_list_controller/chat_room_list_bloc.dart';
 import 'package:blca_project_app/controller/contact_controller/contact_event.dart';
 import 'package:blca_project_app/controller/contact_controller/contact_state.dart';
 import 'package:blca_project_app/controller/contact_controller/controller_bloc.dart';
+import 'package:blca_project_app/logger.dart';
 import 'package:blca_project_app/route/route.dart';
+import 'package:blca_project_app/view/setting/widget/network_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:starlight_utils/starlight_utils.dart';
@@ -12,77 +17,123 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final chatRoomListBloc = context.read<ChatRoomListBloc>();
     final contactbloc = context.read<ContactBloc>();
-    final chattingbloc = context.read<ChatRoomBloc>();
+    final createChatRoom = context.read<ChatRoomCreateBloc>();
+
     return Scaffold(
-      appBar: AppBar(
-        leading: TextButton(onPressed: () {}, child: const Text("Edit")),
-        actions: [
-          OutlinedButton.icon(
-            onPressed: () async {},
-            label: const Text("New"),
-            icon: const Icon(Icons.add),
-          )
-        ],
-      ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10),
-        child: Column(
+        child: Stack(
           children: [
-            TextFormField(
-              decoration: const InputDecoration(
-                isDense: true,
-                suffixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(10)),
+            Column(
+              children: [
+                TextFormField(
+                  decoration: const InputDecoration(
+                    isDense: true,
+                    suffixIcon: Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(10)),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            Expanded(
-              child: BlocBuilder<ContactBloc, ContactBaseState>(
-                  builder: (_, state) {
-                final post = state.posts;
-                if (state is ContactLoadingState) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }
-                if (post.isEmpty) {
-                  return Center(
-                      child: TextButton(
-                    onPressed: () {
-                      contactbloc.add(RefreshContactEvent());
-                    },
-                    child: const Text("No Data"),
-                  ));
-                }
-                return RefreshIndicator(
-                  onRefresh: () async {
-                    contactbloc.add(RefreshContactEvent());
-                  },
-                  child: ListView.separated(
-                      separatorBuilder: (_, i) {
-                        return const SizedBox(
-                          height: 1,
-                        );
+                const SizedBox(
+                  height: 20,
+                ),
+                Expanded(
+                  child: BlocBuilder<ContactBloc, ContactBaseState>(
+                      builder: (_, state) {
+                    final post = state.posts;
+                    if (state is ContactLoadingState) {
+                      return const Center(
+                        child: CircularProgressIndicator(),
+                      );
+                    }
+                    if (post.isEmpty) {
+                      return Center(
+                          child: TextButton(
+                        onPressed: () {
+                          contactbloc.add(RefreshContactEvent());
+                        },
+                        child: const Text("No Data"),
+                      ));
+                    }
+                    return RefreshIndicator(
+                      onRefresh: () async {
+                        contactbloc.add(RefreshContactEvent());
                       },
-                      itemCount: state.posts.length,
-                      itemBuilder: (_, i) {
-                        return ChatRoom(
-                            onTap: () {
-                              chattingbloc.chatRoomCreate(state.posts[i]);
-                              StarlightUtils.pushNamed(RouteNames.chatRoom,
-                                  arguments: state.posts[i]);
-                            },
-                            name: state.posts[i].email,
-                            message: "abacajfkjaljfkj");
-                      }),
-                );
-              }),
+                      child: ListView.separated(
+                          separatorBuilder: (_, i) {
+                            return const SizedBox(
+                              height: 20,
+                            );
+                          },
+                          itemCount: state.posts.length,
+                          itemBuilder: (_, i) {
+                            final shortName = state.posts[i].displayName?[0] ??
+                                state.posts[i].email[0] ??
+                                state.posts[i].uid[0];
+                            final profileUrl = state.posts[i].photoURL;
+                            return ListTile(
+                              onTap: () {
+                                createChatRoom
+                                    .add(ChatRoomOnCreateEvent(state.posts[i]));
+                              },
+                              leading: profileUrl?.isEmpty == true
+                                  ? CircleAvatar(
+                                      maxRadius: 50,
+                                      child: Text(
+                                        shortName,
+                                        style: const TextStyle(
+                                          fontSize: 28,
+                                        ),
+                                      ),
+                                    )
+                                  : NetworkProfile(
+                                      radius: 50,
+                                      onFail: CircleAvatar(
+                                        maxRadius: 35,
+                                        child: Text(
+                                          shortName,
+                                          style: const TextStyle(
+                                            fontSize: 28,
+                                          ),
+                                        ),
+                                      ),
+                                      profileUrl: profileUrl ?? "",
+                                    ),
+                              title: Text(state.posts[i].displayName ??
+                                  state.posts[i].email ??
+                                  " No Name"),
+                            );
+                          }),
+                    );
+                  }),
+                ),
+              ],
             ),
+            BlocConsumer<ChatRoomCreateBloc, ChatRoomCreateState>(
+                listener: (_, state) {
+              logger.wtf("state is $state");
+              if (state is ChatRoomCreateSuccessState) {
+                StarlightUtils.pushNamed(RouteNames.messaging,
+                    arguments: state.room);
+              }
+              if (state is ChatRoomCreateErrorState) {
+                StarlightUtils.snackbar(SnackBar(content: Text(state.error)));
+              }
+            }, builder: (_, state) {
+              if (state is ChatRoomCreateLoadingState) {
+                return SizedBox(
+                  width: context.width,
+                  height: context.height,
+                  child: const Center(
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+              return const SizedBox();
+            })
           ],
         ),
       ),

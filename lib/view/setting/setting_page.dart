@@ -86,11 +86,11 @@ class SettingPage extends StatelessWidget {
               onTap: _aboutUs,
               title: "About Us",
             ),
-            const Padding(
-                padding: EdgeInsets.only(top: 20),
-                child: Align(
-                  child: LogoutButton(),
-                )),
+            // const Padding(
+            //     padding: EdgeInsets.only(top: 20),
+            //     child: Align(
+            //       child: LogoutButton(),
+            //     )),
           ],
         ),
       ),
@@ -98,28 +98,23 @@ class SettingPage extends StatelessWidget {
   }
 }
 
-Future<void> _logout() async {
-  await Injection<AuthService>().signOut();
-  StarlightUtils.pop();
-}
+// class LogoutButton extends StatelessWidget {
+//   const LogoutButton({super.key});
 
-class LogoutButton extends StatelessWidget {
-  const LogoutButton({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = context.theme;
-    return const TextButton(
-      onPressed: _logout,
-      child: Text(
-        "Logout",
-        style: TextStyle(
-          fontSize: 18,
-        ),
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     final theme = context.theme;
+//     return const TextButton(
+//       onPressed: _logout,
+//       child: Text(
+//         "Logout",
+//         style: TextStyle(
+//           fontSize: 18,
+//         ),
+//       ),
+//     );
+//   }
+// }
 
 class OnTapCard extends StatelessWidget {
   final String title;

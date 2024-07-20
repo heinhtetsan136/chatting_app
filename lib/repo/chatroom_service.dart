@@ -24,63 +24,76 @@ class ChatRoomService {
       return const Result(error: GeneralError("Something went wrong"));
     }
   }
+
   // Future<Result> createChatRoom()async{
+  Future<Result> updatedChatRoom(String chatRoomId) {
+    return _try(() async {
+      return const Result();
+    });
+  }
 
   // }
   Future<Result> createChatRoom(
     ChatRoomParams room,
-  ) async {
-    final payload = room.toCreate();
+  ) {
     return _try(() async {
-      final user = _authService.currentUser;
-      if (user == null) {
-        return const Result(error: GeneralError("User not found"));
-      }
-
-      final doc = db.collection("ChatRoom").doc();
-      final result = await getChatRoom();
-      payload.addEntries({MapEntry("id", doc.id)});
-      print("create payload $payload");
-      await doc.set(payload, SetOptions(merge: true));
-      return Result(data: payload);
-    });
-  }
-
-  Future<Result> checkChatRoom(ContactUser other) async {
-    return _try(() async {
-      final user = _authService.currentUser;
-      if (user == null) {
-        return const Result(error: GeneralError("User not found"));
-      }
-
-      final doc = db.collection("ChatRoom");
-      final checkOne = await doc
-          .where("fromUserId", isEqualTo: user.uid)
-          .where("toUserId", isEqualTo: other.uid)
-          .get();
-      if (checkOne.docs.isEmpty) {
-        final result = await doc
-            .where("fromUserId", isEqualTo: other.uid)
-            .where("toUserId", isEqualTo: user.uid)
-            .get();
-        if (result.docs.isEmpty) {
-          return const Result(data: false);
-        } else {
-          return const Result(data: true);
+      final payload = room.toCreate();
+      return _try(() async {
+        final user = _authService.currentUser;
+        if (user == null) {
+          return const Result(error: GeneralError("User not found"));
         }
-      }
-      return const Result(data: true); // chat room has been created
+
+        final doc = db.collection("ChatRoom").doc();
+
+        payload.addEntries({MapEntry("id", doc.id)});
+        print("create payload $payload");
+        await doc.set(payload, SetOptions(merge: true));
+        return Result(data: payload);
+      });
     });
   }
 
-  Future<Result> getChatRoom() async {
+  Future<Result> checkChatRoomCreateifNotExist(
+      ContactUser other, ChatRoomParams chatRoomParams) async {
+    logger.i("checkChatRoomCreateifNotExist");
+    logger.i("check try");
+    final user = _authService.currentUser;
+    if (user == null) {
+      return const Result(error: GeneralError("User not found"));
+    }
+
+    final doc = db.collection("ChatRoom");
+    final checkExist = await doc
+        .where("fromUserId", isEqualTo: user.uid)
+        .where("toUserId", isEqualTo: other.uid)
+        .get();
+    if (checkExist.docs.isEmpty) {
+      final result = await doc
+          .where("fromUserId", isEqualTo: other.uid)
+          .where("toUserId", isEqualTo: user.uid)
+          .get();
+      if (result.docs.isEmpty) {
+        final newroom = await createChatRoom(chatRoomParams);
+        return Result(data: newroom.data);
+      } else {
+        return Result(data: result.docs.first.data());
+      }
+    }
+    return Result(data: checkExist.docs.first.data());
+  }
+
+  Future<Result> getListOfChatRoom() async {
     return _try(() async {
       final user = _authService.currentUser;
       if (user == null) {
         return const Result(error: GeneralError("User not found"));
       }
       final doc = db.collection("ChatRoom");
-      final result = await doc.where("member", arrayContains: user.uid).get();
+      final result = await doc
+          .where("member", arrayContains: user.uid)
+          .orderBy("updated_At", descending: true)
+          .get();
       List<ChatRoom> rooms = [];
       for (var room in result.docs) {
         final chatroom = ChatRoom.fromJson(room);
@@ -100,8 +113,9 @@ class ChatRoomService {
 
   void contactListener(void Function(ChatRoom) messages) async {
     final doc = db.collection("ChatRoom");
-    final result =
-        doc.where("member", arrayContains: _authService.currentUser?.uid);
+    final result = doc
+        .where("member", arrayContains: _authService.currentUser?.uid)
+        .orderBy("updated_At", descending: true);
     chatRoomStream = result.snapshots().listen((event) {
       print("event is ${event.docs}");
       if (event.docs.isNotEmpty) {

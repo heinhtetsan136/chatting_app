@@ -1,4 +1,5 @@
 import 'package:blca_project_app/controller/chatting/chatting_bloc.dart';
+import 'package:blca_project_app/controller/chatting/chatting_event.dart';
 import 'package:blca_project_app/controller/chatting/chatting_state.dart';
 import 'package:blca_project_app/injection.dart';
 import 'package:blca_project_app/logger.dart';
@@ -95,67 +96,86 @@ class MessagingScreen extends StatelessWidget {
                     child: Text("No Message"),
                   );
                 }
-                return ListView.separated(
-                  reverse: true,
-                  separatorBuilder: (_, i) {
-                    return const SizedBox(height: 30);
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    messagebloc.add(const ChattingRefreshMessageEvent());
                   },
-                  itemBuilder: (_, i) {
-                    final isImage = state.message[i].isText == false;
-                    var date = DateTime.fromMicrosecondsSinceEpoch(
-                        state.message[i].sendingTime.microsecondsSinceEpoch);
-                    print(date);
-                    final message = state.message[i];
-                    myMessage = message.fromUser == auth.currentUser!.uid;
-                    print("messages ");
-                    print(date.hour);
+                  child: ListView.separated(
+                    reverse: true,
+                    separatorBuilder: (_, i) {
+                      return const SizedBox(height: 30);
+                    },
+                    itemBuilder: (_, i) {
+                      final isImage = state.message[i].isText == false;
+                      var date = DateTime.fromMicrosecondsSinceEpoch(
+                          state.message[i].sendingTime.microsecondsSinceEpoch);
+                      print(date);
+                      final message = state.message[i];
+                      myMessage = message.fromUser == auth.currentUser!.uid;
+                      print("messages ");
+                      print(date.hour);
 
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          """${(date.difference(DateTime.now()).inMinutes * -1) > 60 ? ("${(date.difference(DateTime.now()).inHours * -1) > 12 ? "${date.day} days : ${date.hour - 12 == -12 ? "12" : date.hour > 12 ? date.hour - 12 : date.hour} hour" : "${date.hour > 12 ? date.hour - 12 : date.hour}:${date.minute > 10 ? date.minute : "0${date.minute}"} ${date.hour > 12 ? "PM" : "AM"} "} ") : ("${date.hour > 12 ? date.hour - 12 : date.hour}:${date.minute > 10 ? date.minute : "0${date.minute}"} ${date.hour > 12 ? "PM" : "AM"}")}  """,
-                          style: const TextStyle(fontWeight: FontWeight.w300),
-                        ),
-                        if (isImage)
-                          Align(
+                      return Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            """${(date.difference(DateTime.now()).inMinutes * -1) > 60 ? ("${(date.difference(DateTime.now()).inHours * -1) > 12 ? "${date.day} days : ${date.hour - 12 == -12 ? "12" : date.hour > 12 ? date.hour - 12 : date.hour} hour" : "${date.hour > 12 ? date.hour - 12 : date.hour}:${date.minute > 10 ? date.minute : "0${date.minute}"} ${date.hour > 12 ? "PM" : "AM"} "} ") : ("${date.hour > 12 ? date.hour - 12 : date.hour}:${date.minute > 10 ? date.minute : "0${date.minute}"} ${date.hour > 12 ? "PM" : "AM"}")}  """,
+                            style: const TextStyle(fontWeight: FontWeight.w300),
+                          ),
+                          if (isImage)
+                            Align(
+                                alignment: myMessage
+                                    ? Alignment.centerRight
+                                    : Alignment.centerLeft,
+                                child: CachedNetworkImage(
+                                    fit: BoxFit.cover,
+                                    progressIndicatorBuilder: (context, url,
+                                            downloadProgress) =>
+                                        Center(
+                                          child: CircularProgressIndicator(
+                                              value: downloadProgress.progress),
+                                        ),
+                                    errorWidget: (context, url, error) =>
+                                        const Icon(Icons.error),
+                                    height: 200,
+                                    width: 200,
+                                    imageUrl: state.message[i].data!)),
+
+                          if (!isImage)
+                            Align(
                               alignment: myMessage
                                   ? Alignment.centerRight
                                   : Alignment.centerLeft,
-                              child: CachedNetworkImage(
-                                  imageUrl: state.message[i].data!)),
-
-                        if (!isImage)
-                          Align(
-                            alignment: myMessage
-                                ? Alignment.centerRight
-                                : Alignment.centerLeft,
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                color: Colors.blue,
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(10),
-                                child: Text(
-                                  " ${state.message[i].data}",
-                                  style: const TextStyle(),
+                              child: DecoratedBox(
+                                decoration: BoxDecoration(
+                                  color: Colors.blue,
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(10),
+                                  child: Text(
+                                    " ${state.message[i].data}",
+                                    style: const TextStyle(),
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                        // Text(
-                        //   "${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute}:${date.second}",
-                        // ),
-                        //  Text(
-                        //    """${(date.difference(DateTime.now()).inMinutes * -1) > 60 ? ("${(date.difference(DateTime.now()).inHours * -1) > 12 ? "${date.difference(DateTime.now()).inDays * -1} days" : "${date.difference(DateTime.now()).inHours * -1} hour"} ") : ("${date.difference(DateTime.now()).inMinutes * -1} minutes")} ago" """),
-                      ],
-                    );
-                  },
-                  itemCount: state.message.length,
+                          // Text(
+                          //   "${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute}:${date.second}",
+                          // ),
+                          //  Text(
+                          //    """${(date.difference(DateTime.now()).inMinutes * -1) > 60 ? ("${(date.difference(DateTime.now()).inHours * -1) > 12 ? "${date.difference(DateTime.now()).inDays * -1} days" : "${date.difference(DateTime.now()).inHours * -1} hour"} ") : ("${date.difference(DateTime.now()).inMinutes * -1} minutes")} ago" """),
+                        ],
+                      );
+                    },
+                    itemCount: state.message.length,
+                  ),
                 );
               }),
+            ),
+            const SizedBox(
+              height: 10,
             ),
             Row(
               crossAxisAlignment: CrossAxisAlignment.end,

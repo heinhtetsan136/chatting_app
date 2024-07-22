@@ -43,7 +43,33 @@ class ChattingBloc extends Bloc<ChattingEvent, ChattingState> {
       }
       emit(ChattingLoadedState(result.data));
     });
-    on<ChattingRefreshMessageEvent>((_, emit) {});
+    int tryCount = 0;
+    int limit = 20;
+    on<ChattingRefreshMessageEvent>((_, emit) async {
+      final copied = state.message.toList();
+      if (copied.isEmpty) {
+        emit(ChattingLoadingState(copied));
+      }
+      logger.i("trycount $limit");
+
+      limit = limit + 20;
+      final result = await chatRoomService.getMessages(
+        chatRoom.id,
+        limit,
+      );
+
+      if (result.hasError) {
+        emit(ChattingErrorState(copied, result.error!.message.toString()));
+        return;
+      }
+      if (copied.length == result.data.length) {
+        limit = 20;
+
+        logger.i("trycountget $limit");
+        emit(ChattingSoftLoadingState(copied));
+      }
+      emit(ChattingLoadedState(result.data));
+    });
     on<ChattingNewMessageEvent>((event, emit) {
       emit(ChattingLoadedState(event.post));
     });

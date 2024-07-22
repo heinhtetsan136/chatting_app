@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:blca_project_app/controller/chatting/chatting_event.dart';
 import 'package:blca_project_app/controller/chatting/chatting_state.dart';
 import 'package:blca_project_app/injection.dart';
@@ -5,13 +7,20 @@ import 'package:blca_project_app/logger.dart';
 import 'package:blca_project_app/repo/authService.dart';
 import 'package:blca_project_app/repo/chatRoom_model.dart';
 import 'package:blca_project_app/repo/chattingService.dart';
+import 'package:blca_project_app/repo/firestoreService.dart';
 import 'package:blca_project_app/repo/message.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ChattingBloc extends Bloc<ChattingEvent, ChattingState> {
+  ValueNotifier<bool> text = ValueNotifier(false);
   final AuthService _authService = Injection.get<AuthService>();
   final ChatRoom chatRoom;
+  final FireStoreService _storeService = Injection.get<FireStoreService>();
+  final FirebaseStorage _firebaseStorage = Injection.get<FirebaseStorage>();
+  final ImagePicker _imagePicker = ImagePicker();
   final FocusNode focusNode = FocusNode();
   final TextEditingController textEditingController = TextEditingController();
   final Chattingservice chatRoomService = Injection.get<Chattingservice>();
@@ -40,6 +49,28 @@ class ChattingBloc extends Bloc<ChattingEvent, ChattingState> {
     });
     add(const ChattingGetAllMessageEvent());
   }
+  void pickImage() async {
+    final image = await _imagePicker.pickImage(source: ImageSource.gallery);
+    if (image == null) return;
+    //  final ref = _storage.ref().child("user_profile/${user.uid}");
+    // final profilePath = "users/${user.uid}_${DateTime.now().toIso8601String()}";
+    // await _storage.ref(profilePath).putFile(File(profilePath));
+    final point = _firebaseStorage
+        .ref()
+        .child("messages/${chatRoom.id}/${DateTime.now().toIso8601String()}");
+    final roompath =
+        "messages/${chatRoom.id}/${DateTime.now().toIso8601String()}";
+    await _firebaseStorage.ref(roompath).putFile(File(image.path));
+    final message = await _firebaseStorage.ref(roompath).getDownloadURL();
+    final payload = MessageParams.toCreate(
+      chatRoomId: chatRoom.id,
+      data: message,
+      fromUser: _authService.currentUser!.uid,
+      isText: false,
+    );
+    await chatRoomService.sendMessage(payload);
+  }
+
   void sendMessage() async {
     final message = textEditingController.text;
     if (message.isEmpty) {
@@ -54,6 +85,10 @@ class ChattingBloc extends Bloc<ChattingEvent, ChattingState> {
     await chatRoomService.sendMessage(payload);
 
     focusNode.unfocus();
+  }
+
+  void toggle() {
+    text.value = !text.value;
   }
 
   void contactListener(Message message) {

@@ -124,7 +124,7 @@ class AuthService {
       await _storage.ref(prev!).delete();
     }
     final ref = _storage.ref().child("user_profile/${user.uid}");
-    final profilePath = "users/${user.uid}_${DateTime.now().toIso8601String()}";
+    final profilePath = "uuser_profile/${user.uid}}";
     await _storage.ref(profilePath).putFile(File(profilePath));
     return Result(data: ref.getDownloadURL());
   }

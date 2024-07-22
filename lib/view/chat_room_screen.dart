@@ -45,8 +45,8 @@ class ChatRoomListScreen extends StatelessWidget {
                   state.message[i].member.map((e) => e.toString()).toList();
               logger.i("object is ${state.message[i].toUserName}");
               print("object is ${state.message[i].toUserName}");
-              return ChatRoom(
-                  name: members[0] ==
+              return ChatRoomTile(
+                  otherUserId: members[0] ==
                           Injection.get<AuthService>().currentUser!.uid
                       ? members[1]
                       : members[0],

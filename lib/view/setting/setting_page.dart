@@ -1,8 +1,11 @@
+import 'package:blca_project_app/controller/login/login_bloc.dart';
 import 'package:blca_project_app/injection.dart';
 import 'package:blca_project_app/repo/authService.dart';
 import 'package:blca_project_app/route/route.dart';
+import 'package:blca_project_app/view/auth/login_page.dart';
 import 'package:blca_project_app/view/setting/widget/profile_card.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:starlight_utils/starlight_utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -86,11 +89,11 @@ class SettingPage extends StatelessWidget {
               onTap: _aboutUs,
               title: "About Us",
             ),
-            // const Padding(
-            //     padding: EdgeInsets.only(top: 20),
-            //     child: Align(
-            //       child: LogoutButton(),
-            //     )),
+            const Padding(
+                padding: EdgeInsets.only(top: 20),
+                child: Align(
+                  child: LogoutButton(),
+                )),
           ],
         ),
       ),
@@ -98,23 +101,34 @@ class SettingPage extends StatelessWidget {
   }
 }
 
-// class LogoutButton extends StatelessWidget {
-//   const LogoutButton({super.key});
+Future<void> _logout() async {
+  await Injection<AuthService>().signOut();
+  StarlightUtils.pushAndRemoveUntil(
+      BlocProvider(
+        create: (_) => LoginBloc(),
+        child: const LoginPage(),
+      ), (Route route) {
+    return false;
+  });
+}
 
-//   @override
-//   Widget build(BuildContext context) {
-//     final theme = context.theme;
-//     return const TextButton(
-//       onPressed: _logout,
-//       child: Text(
-//         "Logout",
-//         style: TextStyle(
-//           fontSize: 18,
-//         ),
-//       ),
-//     );
-//   }
-// }
+class LogoutButton extends StatelessWidget {
+  const LogoutButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.theme;
+    return const TextButton(
+      onPressed: _logout,
+      child: Text(
+        "Logout",
+        style: TextStyle(
+          fontSize: 18,
+        ),
+      ),
+    );
+  }
+}
 
 class OnTapCard extends StatelessWidget {
   final String title;

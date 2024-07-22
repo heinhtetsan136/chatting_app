@@ -5,9 +5,12 @@ import 'package:blca_project_app/controller/chat_room/chat_room_list_controller/
 import 'package:blca_project_app/controller/contact_controller/contact_event.dart';
 import 'package:blca_project_app/controller/contact_controller/contact_state.dart';
 import 'package:blca_project_app/controller/contact_controller/controller_bloc.dart';
+import 'package:blca_project_app/injection.dart';
 import 'package:blca_project_app/logger.dart';
+import 'package:blca_project_app/repo/user_model.dart';
 import 'package:blca_project_app/route/route.dart';
 import 'package:blca_project_app/view/setting/widget/network_profile.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:starlight_utils/starlight_utils.dart';
@@ -141,12 +144,14 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class ChatRoom extends StatelessWidget {
-  final String name, message;
+class ChatRoomTile extends StatelessWidget {
+  final String otherUserId;
+
+  final String message;
   final void Function() onTap;
-  const ChatRoom(
+  const ChatRoomTile(
       {super.key,
-      required this.name,
+      required this.otherUserId,
       required this.message,
       required this.onTap});
 
@@ -166,17 +171,48 @@ class ChatRoom extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    const CircleAvatar(
-                      radius: 25,
-                      child: Icon(Icons.person),
-                    ),
+                    OtherUserNames(
+                        otherUserId: otherUserId,
+                        builder: (user) {
+                          final shortName = user.email[0] ?? user.uid[0];
+                          final profileUrl = user.photoURL ?? "";
+                          if (profileUrl.isEmpty == true) {
+                            return CircleAvatar(
+                              maxRadius: 20,
+                              child: Text(
+                                shortName,
+                                style: const TextStyle(
+                                  fontSize: 28,
+                                ),
+                              ),
+                            );
+                          }
+                          return NetworkProfile(
+                            radius: 20,
+                            profileUrl: profileUrl,
+                            onFail: CircleAvatar(
+                              maxRadius: 20,
+                              child: Text(
+                                shortName,
+                                style: const TextStyle(
+                                  fontSize: 28,
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
                     Padding(
                       padding: const EdgeInsets.only(left: 10.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(name),
+                          OtherUserNames(
+                            otherUserId: otherUserId,
+                            builder: (user) {
+                              return Text(user.email ?? "No Name");
+                            },
+                          ),
                           Text(message),
                         ],
                       ),
@@ -198,5 +234,29 @@ class ChatRoom extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class OtherUserNames extends StatelessWidget {
+  final String otherUserId;
+  final Widget Function(ContactUser) builder;
+  const OtherUserNames(
+      {super.key, required this.otherUserId, required this.builder});
+
+  @override
+  Widget build(BuildContext context) {
+    final FirebaseFirestore firestore = Injection.get<FirebaseFirestore>();
+    return StreamBuilder(
+        stream: firestore
+            .collection("users")
+            .where("uid", isEqualTo: otherUserId)
+            .snapshots(),
+        builder: (context, snap) {
+          if (snap.hasData == false) {
+            return const Text("No Name");
+          }
+          final user = ContactUser.fromJson(snap.data!.docs.first.data());
+          return builder(user);
+        });
   }
 }

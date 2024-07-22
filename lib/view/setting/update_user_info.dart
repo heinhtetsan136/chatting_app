@@ -1,7 +1,8 @@
+import 'package:blca_project_app/controller/login/login_bloc.dart';
 import 'package:blca_project_app/controller/profile_setting/profile_setting_bloc.dart';
 import 'package:blca_project_app/controller/profile_setting/profile_setting_event.dart';
 import 'package:blca_project_app/controller/profile_setting/profile_setting_state.dart';
-import 'package:blca_project_app/route/route.dart';
+import 'package:blca_project_app/view/auth/login_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -130,7 +131,13 @@ class UpdateUserInfo extends StatelessWidget {
               StarlightUtils.pop();
             }
             if (state is ProfileSettingSignoutState) {
-              StarlightUtils.pushReplacementNamed(RouteNames.homePage);
+              StarlightUtils.pushAndRemoveUntil(
+                  BlocProvider(
+                    create: (_) => LoginBloc(),
+                    child: const LoginPage(),
+                  ), (Route route) {
+                return false;
+              });
             }
             if (state is ProfileSettingErrorState) {
               StarlightUtils.dialog(AlertDialog(

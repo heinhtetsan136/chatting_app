@@ -19,6 +19,8 @@ class ChatRoomListBloc extends Bloc<ChatRoomBaseEvent, ChatRoomBaseState> {
   final ChatRoomService chatRoomService = Injection.get<ChatRoomService>();
   final StreamController<List<ChatRoom>> roomStream =
       StreamController<List<ChatRoom>>.broadcast();
+  StreamSubscription? _contactStream;
+
   ChatRoomListBloc() : super(const ChatRoomInitialState([])) {
     final List<ChatRoom> room = [];
     // void chatRoomParser(event) {

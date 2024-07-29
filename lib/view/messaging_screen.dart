@@ -19,6 +19,20 @@ class MessagingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    List<String> months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec"
+    ];
     final FirebaseFirestore firestore = Injection.get<FirebaseFirestore>();
     final List<String> user = chatRoom.member.map((e) => e.toString()).toList();
     final AuthService auth = Injection.get<AuthService>();
@@ -120,7 +134,7 @@ class MessagingScreen extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Text(
-                            """${(date.difference(DateTime.now()).inMinutes * -1) > 60 ? ("${(date.difference(DateTime.now()).inHours * -1) > 12 ? "${date.day} days : ${date.hour - 12 == -12 ? "12" : date.hour > 12 ? date.hour - 12 : date.hour} hour" : "${date.hour > 12 ? date.hour - 12 : date.hour}:${date.minute > 10 ? date.minute : "0${date.minute}"} ${date.hour > 12 ? "PM" : "AM"} "} ") : ("${date.hour > 12 ? date.hour - 12 : date.hour}:${date.minute > 10 ? date.minute : "0${date.minute}"} ${date.hour > 12 ? "PM" : "AM"}")}  """,
+                            """ ${(date.difference(DateTime.now()).inMinutes * -1) > 60 ? ("${months[date.month - 1]}${(date.difference(DateTime.now()).inHours * -1) > 12 ? "${date.day} At ${date.hour - 12 == -12 ? "12" : date.hour > 12 ? date.hour - 12 : date.hour}: ${date.minute > 10 ? date.minute : "0${date.minute}"} ${date.hour > 12 ? "PM" : "AM"} " : "${date.hour > 12 ? date.hour - 12 : date.hour}:${date.minute > 10 ? date.minute : "0${date.minute}"} ${date.hour > 12 ? "PM" : "AM"} "} ") : ("${date.hour > 12 ? date.hour - 12 : date.hour}:${date.minute > 10 ? date.minute : "0${date.minute}"} ${date.hour > 12 ? "PM" : "AM"}")}  """,
                             style: const TextStyle(fontWeight: FontWeight.w300),
                           ),
                           if (isImage)

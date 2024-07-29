@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:blca_project_app/controller/chatting/chatting_event.dart';
@@ -23,26 +24,11 @@ class ChattingBloc extends Bloc<ChattingEvent, ChattingState> {
   final ImagePicker _imagePicker = ImagePicker();
   final FocusNode focusNode = FocusNode();
   final TextEditingController textEditingController = TextEditingController();
-  final Chattingservice chatRoomService = Injection.get<Chattingservice>();
+  final Chattingservice chattingService = Injection.get<Chattingservice>();
 
   ChattingBloc(super.initialState, this.chatRoom) {
-    chatRoomService.contactListener(contactListener, chatRoom.id);
-    on<ChattingGetAllMessageEvent>((event, emit) async {
-      final messages = state.message.toList();
-      if (messages.isEmpty) {
-        emit(ChattingLoadingState(messages));
-      } else {
-        emit(ChattingSoftLoadingState(messages));
-      }
-
-      final result = await chatRoomService.getMessages(chatRoom.id);
-      logger.i("message is  ${result.hasError ?? ""}");
-      if (result.hasError) {
-        emit(ChattingErrorState(messages, result.error!.message.toString()));
-        return;
-      }
-      emit(ChattingLoadedState(result.data));
-    });
+    chattingService.contactListener(contactListener, chatRoom.id);
+    on<ChattingGetAllMessageEvent>(_chattingGetAllMessageEventListener);
     int tryCount = 0;
     int limit = 20;
     on<ChattingRefreshMessageEvent>((_, emit) async {
@@ -53,7 +39,7 @@ class ChattingBloc extends Bloc<ChattingEvent, ChattingState> {
       logger.i("trycount $limit");
 
       limit = limit + 20;
-      final result = await chatRoomService.getMessages(
+      final result = await chattingService.getMessages(
         chatRoom.id,
         limit,
       );
@@ -73,8 +59,32 @@ class ChattingBloc extends Bloc<ChattingEvent, ChattingState> {
     on<ChattingNewMessageEvent>((event, emit) {
       emit(ChattingLoadedState(event.post));
     });
+    on<DeleteEvent>((event, emit) async {
+      logger.i("DeleteEvent");
+      await chattingService.deleteMessage(event.messageId);
+      emit(ChattingLoadedState(state.message.toList()));
+    });
+
     add(const ChattingGetAllMessageEvent());
   }
+
+  FutureOr<void> _chattingGetAllMessageEventListener(event, emit) async {
+    final messages = state.message.toList();
+    if (messages.isEmpty) {
+      emit(ChattingLoadingState(messages));
+    } else {
+      emit(ChattingSoftLoadingState(messages));
+    }
+
+    final result = await chattingService.getMessages(chatRoom.id);
+    logger.i("message is  ${result.hasError ?? ""}");
+    if (result.hasError) {
+      emit(ChattingErrorState(messages, result.error!.message.toString()));
+      return;
+    }
+    emit(ChattingLoadedState(result.data));
+  }
+
   void pickImage() async {
     final image = await _imagePicker.pickImage(source: ImageSource.gallery);
     if (image == null) return;
@@ -94,7 +104,7 @@ class ChattingBloc extends Bloc<ChattingEvent, ChattingState> {
       fromUser: _authService.currentUser!.uid,
       isText: false,
     );
-    await chatRoomService.sendMessage(payload);
+    await chattingService.sendMessage(payload);
   }
 
   void sendMessage() async {
@@ -108,7 +118,7 @@ class ChattingBloc extends Bloc<ChattingEvent, ChattingState> {
       data: message,
       fromUser: _authService.currentUser!.uid,
     );
-    await chatRoomService.sendMessage(payload);
+    await chattingService.sendMessage(payload);
 
     focusNode.unfocus();
   }
@@ -130,12 +140,13 @@ class ChattingBloc extends Bloc<ChattingEvent, ChattingState> {
     } else {
       copied[index] = message;
     }
-    print("new message addd $copied");
+    print("new message addd ${copied.length}");
     add(ChattingNewMessageEvent(copied));
   }
 
   @override
   Future<void> close() {
+    logger.i("chatting close bloc");
     textEditingController.dispose();
     focusNode.dispose();
     // TODO: implement close

@@ -75,6 +75,7 @@ class Chattingservice {
     }
   }
 
+  int previousLength = 0;
   StreamSubscription? messagesstream;
   void contactListener(
       void Function(Message) messages, String chatRoomId) async {
@@ -86,6 +87,11 @@ class Chattingservice {
     messagesstream = result.snapshots().listen((event) {
       print("event is ${event.docs}");
       if (event.docs.isNotEmpty) {
+        if (event.docs.length < previousLength) {
+          return;
+        }
+        previousLength = event.docs.length;
+
         final message = Message.fromJson(event.docs.first.data());
         print("stream User ${message.id}");
         messages(message);

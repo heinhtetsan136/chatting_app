@@ -128,11 +128,13 @@ class ChattingBloc extends Bloc<ChattingEvent, ChattingState> {
   }
 
   void contactListener(Message message) {
+    logger.i("message is ${message.data}");
     final copied = state.message.toList();
     if (copied.isEmpty) {
       add(const ChattingGetAllMessageEvent());
       return;
     }
+
     print("new message $copied");
     final index = copied.indexOf(message);
     if (index == -1) {

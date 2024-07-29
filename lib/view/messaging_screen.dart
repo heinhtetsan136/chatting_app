@@ -103,7 +103,7 @@ class MessagingScreen extends StatelessWidget {
             Expanded(
               child: BlocBuilder<ChattingBloc, ChattingState>(
                   buildWhen: (previous, current) {
-                return previous.message != current.message;
+                return previous.message.length != current.message.length;
               }, builder: (_, state) {
                 logger.e("state messsage $state");
 
@@ -191,6 +191,8 @@ class MessagingScreen extends StatelessWidget {
                                             onTap: () {
                                               messagebloc.add(DeleteEvent(
                                                   messageId: message.id));
+                                              messagebloc.add(
+                                                  const ChattingGetAllMessageEvent());
                                               StarlightUtils.pop();
                                             },
                                           )

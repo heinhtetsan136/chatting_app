@@ -3,6 +3,7 @@ import 'package:blca_project_app/controller/chat_room/chat_room_create_controlle
 import 'package:blca_project_app/controller/chat_room/chat_room_list_controller/chat_room_list_bloc.dart';
 import 'package:blca_project_app/controller/chatting/chatting_bloc.dart';
 import 'package:blca_project_app/controller/chatting/chatting_state.dart';
+import 'package:blca_project_app/controller/chatting/send_data/send_data_bloc.dart';
 import 'package:blca_project_app/controller/contact_controller/controller_bloc.dart';
 import 'package:blca_project_app/controller/home_controller/home_controller_bloc.dart';
 import 'package:blca_project_app/controller/login/login_bloc.dart';
@@ -43,9 +44,13 @@ Route? router(RouteSettings settings) {
       }
       return _protectedRoute(
           incomingRoute,
-          BlocProvider(
-              create: (_) =>
-                  ChattingBloc(ChattingInitialState(const []), values),
+          MultiBlocProvider(
+              providers: [
+                BlocProvider(
+                    create: (_) =>
+                        ChattingBloc(ChattingInitialState(const []), values)),
+                BlocProvider(create: (_) => SendDataBloc(values))
+              ],
               child: MessagingScreen(
                 chatRoom: values,
               )),

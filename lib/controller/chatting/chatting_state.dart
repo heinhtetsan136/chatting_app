@@ -5,7 +5,7 @@ abstract class ChattingState extends Equatable {
   List<Message> message;
   ChattingState(this.message);
   @override
-  List<Object?> get props => message;
+  List<Object?> get props => [message, DateTime.now()];
 }
 
 class ChattingInitialState extends ChattingState {
@@ -29,4 +29,17 @@ class ChattingErrorState extends ChattingState {
   ChattingErrorState(super.message, this.error);
   @override
   List<Object?> get props => [...super.message, error];
+}
+
+class ChattingSendMessageSucessState extends ChattingState {
+  ChattingSendMessageSucessState(super.message);
+}
+
+class ChattingSendMessageErrorState extends ChattingState {
+  final String error;
+  ChattingSendMessageErrorState(super.message, this.error);
+}
+
+class ChattingSendMessageLoadingState extends ChattingState {
+  ChattingSendMessageLoadingState(super.message);
 }

@@ -16,3 +16,8 @@ class ChattingNewMessageEvent extends ChattingEvent {
   final List<Message> post;
   ChattingNewMessageEvent(this.post);
 }
+
+class DeleteEvent extends ChattingEvent {
+  String messageId;
+  DeleteEvent({required this.messageId});
+}

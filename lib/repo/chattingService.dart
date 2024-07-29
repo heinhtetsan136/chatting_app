@@ -46,19 +46,20 @@ class Chattingservice {
       payload.addEntries({MapEntry("sendingTime", Timestamp.now())});
       await doc.set(payload, SetOptions(merge: true));
 
-      return const Result();
+      return Result(data: payload);
     });
   }
 
-  Future<Result> updateMessage() async {
+  Future<Result> updateMessage(String messageId) async {
     return _try(() async {
       return const Result();
     });
   }
 
-  Future<Result> deleteMessage() async {
+  Future<Result> deleteMessage(String messageId) async {
     return _try(() async {
-      return const Result();
+      await _db.collection("Message").doc(messageId).delete();
+      return const Result(data: ());
     });
   }
 

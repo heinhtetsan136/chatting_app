@@ -17,8 +17,10 @@ import 'package:image_picker/image_picker.dart';
 
 class SendDataBloc extends Bloc<SendDataBaseEvent, SendDataBaseState> {
   final TextEditingController textEditingController = TextEditingController();
+  final TextEditingController edit = TextEditingController();
   final ChatRoom chatRoom;
   final ImagePicker _imagePicker = ImagePicker();
+  final FocusNode editFocusNode = FocusNode();
   final FocusNode focusNode = FocusNode();
   final FirebaseStorage _firebaseStorage = Injection.get<FirebaseStorage>();
   final Chattingservice chattingService = Injection.get<Chattingservice>();
@@ -29,8 +31,12 @@ class SendDataBloc extends Bloc<SendDataBaseEvent, SendDataBaseState> {
           const SendDataInitialState(),
         ) {
     on<SendPhotoEvent>((_, emit) async {
+      emit(const SendDataLoadingState());
       final image = await _imagePicker.pickImage(source: ImageSource.gallery);
-      if (image == null) return;
+      if (image == null) {
+        emit(const SendDataErrorState("No image selected"));
+        return;
+      }
 
       //  final ref = _storage.ref().child("user_profile/${user.uid}");
       // final profilePath = "users/${user.uid}_${DateTime.now().toIso8601String()}";
@@ -51,16 +57,42 @@ class SendDataBloc extends Bloc<SendDataBaseEvent, SendDataBaseState> {
       final Map<String, dynamic> userSend = payload.toCreate();
       userSend.addEntries({MapEntry("id", chatRoom.id)});
       userSend.addEntries({MapEntry("sendingTime", Timestamp.now())});
-      emit(SendDataLoadingState(Message.fromJson(userSend)));
+
       final result = await chattingService.sendMessage(payload);
       logger.e("result ${result.hasError}");
       if (result.hasError) {
         emit(SendDataErrorState(
-            result.error!.message.toString(), Message.fromJson(userSend)));
+          result.error!.message.toString(),
+        ));
       }
-      emit(SendDataLoadedState(Message.fromJson(userSend)));
-    });
 
+      emit(const SendDataLoadedState());
+    });
+    on<DeleteEvent>((event, emit) async {
+      logger.i("DeleteEvent");
+      emit(const SendDataLoadingState());
+
+      final result = await chattingService.deleteMessage(event.message);
+      if (result.hasError) {
+        emit(SendDataErrorState(
+          result.error!.message.toString(),
+        ));
+      }
+
+      emit(const SendDataDeleteState());
+    });
+    on<UpdateMessageEvent>((event, emit) async {
+      final result = await chattingService.updateMessage(event.id, edit.text);
+      emit(const SendDataLoadingState());
+      if (result.hasError) {
+        print("this is new message error");
+        emit(SendDataErrorState(
+          result.error!.message.toString(),
+        ));
+      }
+      print("this is new message ${result.data.toString()}");
+      emit(const SendDataLoadedState());
+    });
     on<SendMessageEvent>((event, emit) async {
       final message = textEditingController.text;
       if (message.isEmpty) {
@@ -77,20 +109,23 @@ class SendDataBloc extends Bloc<SendDataBaseEvent, SendDataBaseState> {
       userSend.addEntries({MapEntry("id", chatRoom.id)});
       userSend.addEntries({MapEntry("sendingTime", Timestamp.now())});
 
-      emit(SendDataLoadingState(Message.fromJson(userSend)));
+      emit(const SendDataLoadingState());
       final result = await chattingService.sendMessage(payload);
       logger.e("result ${result.hasError}");
       if (result.hasError) {
         emit(SendDataErrorState(
-            result.error!.message.toString(), Message.fromJson(userSend)));
+          result.error!.message.toString(),
+        ));
       }
 
-      emit(SendDataLoadedState(Message.fromJson(userSend)));
+      emit(const SendDataLoadedState());
     });
   }
   @override
   Future<void> close() {
     textEditingController.dispose();
+    editFocusNode.dispose();
+    edit.dispose();
     focusNode.dispose();
     // TODO: implement close
     return super.close();

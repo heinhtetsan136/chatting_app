@@ -1,5 +1,3 @@
-import 'package:blca_project_app/repo/message.dart';
-
 abstract class SendDataBaseState {
   const SendDataBaseState();
 }
@@ -8,18 +6,22 @@ class SendDataInitialState extends SendDataBaseState {
   const SendDataInitialState();
 }
 
+class SendDataDeleteState extends SendDataBaseState {
+  const SendDataDeleteState();
+}
+
 class SendDataLoadingState extends SendDataBaseState {
-  final Message data;
-  const SendDataLoadingState(this.data);
+  const SendDataLoadingState();
 }
 
 class SendDataLoadedState extends SendDataBaseState {
-  final Message data;
-  const SendDataLoadedState(this.data);
+  const SendDataLoadedState();
 }
 
 class SendDataErrorState extends SendDataBaseState {
   final String error;
-  final Message data;
-  const SendDataErrorState(this.error, this.data);
+
+  const SendDataErrorState(
+    this.error,
+  );
 }

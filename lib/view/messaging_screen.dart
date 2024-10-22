@@ -3,6 +3,7 @@ import 'package:blca_project_app/controller/chatting/chatting_event.dart';
 import 'package:blca_project_app/controller/chatting/chatting_state.dart';
 import 'package:blca_project_app/controller/chatting/send_data/send_data_bloc.dart';
 import 'package:blca_project_app/controller/chatting/send_data/send_data_event.dart';
+import 'package:blca_project_app/controller/chatting/send_data/send_data_state.dart';
 import 'package:blca_project_app/injection.dart';
 import 'package:blca_project_app/logger.dart';
 import 'package:blca_project_app/repo/authService.dart';
@@ -11,6 +12,7 @@ import 'package:blca_project_app/view/contact_screen.dart';
 import 'package:blca_project_app/view/setting/widget/network_profile.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:starlight_utils/starlight_utils.dart';
@@ -21,6 +23,7 @@ class MessagingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool isEdit = false;
     final sendData = context.read<SendDataBloc>();
 
     List<String> months = [
@@ -101,10 +104,8 @@ class MessagingScreen extends StatelessWidget {
               ],
             ),
             Expanded(
-              child: BlocBuilder<ChattingBloc, ChattingState>(
-                  buildWhen: (previous, current) {
-                return previous.message.length != current.message.length;
-              }, builder: (_, state) {
+              child:
+                  BlocBuilder<ChattingBloc, ChattingState>(builder: (_, state) {
                 logger.e("state messsage $state");
 
                 if (state is ChattingLoadingState) {
@@ -149,127 +150,41 @@ class MessagingScreen extends StatelessWidget {
                                 alignment: myMessage
                                     ? Alignment.centerRight
                                     : Alignment.centerLeft,
-                                child: CachedNetworkImage(
-                                    fit: BoxFit.cover,
-                                    progressIndicatorBuilder: (context, url,
-                                            downloadProgress) =>
-                                        Center(
-                                          child: CircularProgressIndicator(
-                                              value: downloadProgress.progress),
-                                        ),
-                                    errorWidget: (context, url, error) =>
-                                        const Icon(Icons.error),
-                                    height: 200,
-                                    width: 200,
-                                    imageUrl: messages[i].data!)),
+                                child: Gesture(
+                                  onTap: () {
+                                    sendData.add(DeleteEvent(
+                                      message: message,
+                                    ));
 
+                                    StarlightUtils.pop();
+                                  },
+                                  child: CachedNetworkImage(
+                                      fit: BoxFit.cover,
+                                      progressIndicatorBuilder: (context, url,
+                                              downloadProgress) =>
+                                          Center(
+                                            child: CircularProgressIndicator(
+                                                value:
+                                                    downloadProgress.progress),
+                                          ),
+                                      errorWidget: (context, url, error) =>
+                                          const Icon(Icons.error),
+                                      height: 200,
+                                      width: 200,
+                                      imageUrl: messages[i].data!),
+                                )),
                           if (!isImage)
                             Align(
                               alignment: myMessage
                                   ? Alignment.centerRight
                                   : Alignment.centerLeft,
-                              child: GestureDetector(
-                                onLongPress: () {
-                                  StarlightUtils.dialog(Dialog(
-                                    child: Container(
-                                      height: 300,
-                                      width: 200,
-                                      color: Colors.green,
-                                      child: Column(
-                                        children: [
-                                          const Text("Choose Your Option"),
-                                          ListTile(
-                                            title: const Text("Edit"),
-                                            onTap: () {
-                                              messagebloc.add(DeleteEvent(
-                                                  messageId: message.id));
-                                              StarlightUtils.pop();
-                                            },
-                                          ),
-                                          ListTile(
-                                            title: const Text("Delete"),
-                                            onTap: () {
-                                              messagebloc.add(DeleteEvent(
-                                                  messageId: message.id));
-                                              messagebloc.add(
-                                                  const ChattingGetAllMessageEvent());
-                                              StarlightUtils.pop();
-                                            },
-                                          )
-                                        ],
-                                      ),
-                                    ),
+                              child: Gesture(
+                                onTap: () {
+                                  sendData.add(DeleteEvent(
+                                    message: message,
                                   ));
-                                  // logger.i("this is long press");
-                                  // StarlightUtils.bottomSheet(builder: (_) {
-                                  //   return SizedBox(
-                                  //     height: 200,
-                                  //     width: context.width * 0.8,
-                                  //     child: Column(
-                                  //       children: [
-                                  //         Row(
-                                  //           children: [
-                                  //             const Text("Choose Your Option"),
-                                  //             IconButton(
-                                  //                 onPressed: () {
-                                  //                   StarlightUtils.pop();
-                                  //                 },
-                                  //                 icon: const Icon(Icons.close))
-                                  //           ],
-                                  //         ),
-                                  //         Expanded(
-                                  //           child: Column(
-                                  //             children: [
-                                  //               ListTile(
-                                  //                 title: const Text("Edit"),
-                                  //                 trailing:
-                                  //                     const Icon(Icons.edit),
-                                  //                 onTap: () {},
-                                  //               ),
-                                  //               ListTile(
-                                  //                 title: const Text("Delete"),
-                                  //                 trailing: BlocConsumer<
-                                  //                         SendDataBloc,
-                                  //                         SendDataBaseState>(
-                                  //                     listener: (_, state) {
-                                  //                   if (state
-                                  //                       is SendDataErrorState) {
-                                  //                     StarlightUtils.snackbar(
-                                  //                         SnackBar(
-                                  //                             content: Text(
-                                  //                                 state
-                                  //                                     .error)));
-                                  //                   }
-                                  //                   if (state
-                                  //                       is SendDataLoadedState) {
-                                  //                     StarlightUtils.snackbar(
-                                  //                         const SnackBar(
-                                  //                             content: Text(
-                                  //                                 "Deleted")));
-                                  //                     StarlightUtils.pop();
-                                  //                   }
-                                  //                 }, builder: (_, state) {
-                                  //                   if (state
-                                  //                       is SendDataLoadingState) {
-                                  //                     return const Center(
-                                  //                         child:
-                                  //                             CircularProgressIndicator());
-                                  //                   }
-                                  //                   return const Icon(
-                                  //                       Icons.delete);
-                                  //                 }),
-                                  //                 onTap: () {
-                                  //                   sendData.add(DeleteEvent(
-                                  //                       messageId: message.id));
-                                  //                 },
-                                  //               )
-                                  //             ],
-                                  //           ),
-                                  //         ),
-                                  //       ],
-                                  //     ),
-                                  //   );
-                                  // });
+
+                                  StarlightUtils.pop();
                                 },
                                 child: DecoratedBox(
                                   decoration: BoxDecoration(
@@ -286,11 +201,6 @@ class MessagingScreen extends StatelessWidget {
                                 ),
                               ),
                             ),
-                          // Text(
-                          //   "${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute}:${date.second}",
-                          // ),
-                          //  Text(
-                          //    """${(date.difference(DateTime.now()).inMinutes * -1) > 60 ? ("${(date.difference(DateTime.now()).inHours * -1) > 12 ? "${date.difference(DateTime.now()).inDays * -1} days" : "${date.difference(DateTime.now()).inHours * -1} hour"} ") : ("${date.difference(DateTime.now()).inMinutes * -1} minutes")} ago" """),
                         ],
                       );
                     },
@@ -302,6 +212,23 @@ class MessagingScreen extends StatelessWidget {
             const SizedBox(
               height: 10,
             ),
+            BlocConsumer<SendDataBloc, SendDataBaseState>(listener: (_, state) {
+              if (state is SendDataErrorState) {
+                StarlightUtils.snackbar(SnackBar(content: Text(state.error)));
+              }
+              if (state is SendDataDeleteState) {
+                StarlightUtils.snackbar(
+                    const SnackBar(content: Text("Sucessfully deleted")));
+                messagebloc.add(const ChattingRefreshMessageEvent());
+              }
+            }, builder: (_, state) {
+              if (state is SendDataLoadingState) {
+                return const Center(
+                  child: CupertinoActivityIndicator(),
+                );
+              }
+              return const Text("a");
+            }),
             Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -328,21 +255,131 @@ class MessagingScreen extends StatelessWidget {
                         onPressed: () {
                           sendData.add(const SendPhotoEvent());
                         },
-                        icon: const Icon(Icons.image_outlined),
+                        icon: const Icon(Icons.add_a_photo),
                       ),
                       IconButton(
                           onPressed: () {
                             sendData.add(const SendMessageEvent());
                           },
-                          icon: const Icon(Icons.send)),
+                          icon: const Icon(Icons.send))
                     ],
                   )),
                 )
               ],
-            )
+            ),
           ],
         ),
       ),
     );
   }
 }
+
+class Gesture extends StatelessWidget {
+  final void Function() onTap;
+  final Widget child;
+  const Gesture({super.key, required this.onTap, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    final messagesbloc = context.read<ChattingBloc>();
+    return GestureDetector(
+        onLongPress: () {
+          StarlightUtils.dialog(Dialog(
+              child: Container(
+            height: 300,
+            width: 200,
+            color: Colors.green,
+            child: Column(
+              children: [
+                const Text("Choose Your Option"),
+                ListTile(title: const Text("Delete"), onTap: onTap)
+              ],
+            ),
+          )));
+        },
+        child: child);
+  }
+}
+
+                 
+ // isImage
+                                          //     ? const SizedBox()
+                                          //     : ListTile(
+                                          //         title: const Text("Edit"),
+                                          //         onTap: () async {
+                                          //           StarlightUtils.pop();
+                                          //           sendData.edit.text =
+                                          //               message.data ?? "";
+                                          //           final result =
+                                          //               await StarlightUtils
+                                          //                   .dialog(Dialog(
+                                          //                       child:
+                                          //                           Container(
+                                          //             decoration: BoxDecoration(
+                                          //                 borderRadius:
+                                          //                     BorderRadius
+                                          //                         .circular(
+                                          //                             10)),
+                                          //             padding: const EdgeInsets
+                                          //                 .symmetric(
+                                          //                 horizontal: 10),
+                                          //             width: context.width,
+                                          //             height:
+                                          //                 context.height * 0.4,
+                                          //             child: Column(
+                                          //               mainAxisAlignment:
+                                          //                   MainAxisAlignment
+                                          //                       .center,
+                                          //               children: [
+                                          //                 TextFormField(
+                                          //                   onEditingComplete:
+                                          //                       () {
+                                          //                     sendData
+                                          //                         .editFocusNode
+                                          //                         .unfocus();
+                                          //                   },
+                                          //                   controller:
+                                          //                       sendData.edit,
+                                          //                   style:
+                                          //                       const TextStyle(),
+                                          //                   keyboardType:
+                                          //                       TextInputType
+                                          //                           .multiline,
+                                          //                   maxLines: 10,
+                                          //                   minLines: 1,
+                                          //                   focusNode: sendData
+                                          //                       .editFocusNode,
+                                          //                   decoration: InputDecoration(
+                                          //                       isDense: true,
+                                          //                       border: OutlineInputBorder(
+                                          //                           borderRadius:
+                                          //                               BorderRadius.circular(
+                                          //                                   9))),
+                                          //                 ),
+                                          //                 ElevatedButton(
+                                          //                     onPressed: () {
+                                          //                       sendData
+                                          //                           .editFocusNode
+                                          //                           .unfocus();
+                                          //                       sendData.add(
+                                          //                           UpdateMessageEvent(
+                                          //                         message.id,
+                                          //                       ));
+                                          //                       messagebloc.add(
+                                          //                           const ChattingRefreshMessageEvent());
+                                          //                       StarlightUtils
+                                          //                           .pop();
+                                          //                     },
+                                          //                     child: const Text(
+                                          //                         "Update")),
+                                          //               ],
+                                          //             ),
+                                          //           )));
+
+                                          //           // sendData.add(UpdateMessageEvent(
+                                          //           //     message.id,
+                                          //           //     message.data ?? ""));
+                                          //           // messagebloc.add(
+                                          //           //     const ChattingRefreshMessageEvent());
+                                          //         },
+                                          //       ),

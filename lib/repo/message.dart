@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:equatable/equatable.dart';
 
-class Message {
+class Message extends Equatable {
   final String id;
   final String chatRoomId;
   final String fromUser;
@@ -9,7 +10,7 @@ class Message {
   final bool isText;
   final Timestamp sendingTime;
 
-  Message(
+  const Message(
       {required this.id,
       required this.chatRoomId,
       required this.fromUser,
@@ -46,6 +47,10 @@ class Message {
   @override
   // TODO: implement hashCode
   int get hashCode => id.hashCode;
+
+  @override
+  // TODO: implement props
+  List<Object?> get props => [id, data, sendingTime];
 }
 
 class MessageParams {

@@ -50,15 +50,33 @@ class Chattingservice {
     });
   }
 
-  Future<Result> updateMessage(String messageId) async {
+  Future<Result> updateMessage(String messageId, String editedText) async {
     return _try(() async {
-      return const Result();
+      final result = await _db.collection("Message").doc(messageId).get();
+      if (result.data()?.isNotEmpty == false) {
+        return const Result(error: GeneralError("Something Wrong"));
+      }
+      final Message oldMessage = Message.fromJson(result.data());
+
+      final Message newMessage = Message(
+          id: oldMessage.id,
+          chatRoomId: oldMessage.chatRoomId,
+          fromUser: oldMessage.fromUser,
+          data: editedText,
+          sendingTime: oldMessage.sendingTime);
+      await _db.collection("Message").doc(messageId).set(newMessage.toJson());
+      return Result(data: newMessage.toJson());
     });
   }
 
-  Future<Result> deleteMessage(String messageId) async {
+  Future<Result> deleteMessage(Message message) async {
     return _try(() async {
-      await _db.collection("Message").doc(messageId).delete();
+      if (message.isText == false) {
+        print("message is photo");
+        final result = await _storage.refFromURL(message.data!).delete();
+      }
+      await _db.collection("Message").doc(message.id).delete();
+
       return const Result(data: ());
     });
   }

@@ -23,24 +23,7 @@ class ChatRoomListBloc extends Bloc<ChatRoomBaseEvent, ChatRoomBaseState> {
 
   ChatRoomListBloc() : super(const ChatRoomInitialState([])) {
     final List<ChatRoom> room = [];
-    // void chatRoomParser(event) {
-    //   for (var i in event.docs) {
-    //     final model = ChatRoom.fromJson(i.data());
-    //     final index = room.indexOf(model);
-    //     if (index == -1) {
-    //       room.add(model);
-    //     } else {
-    //       room[index] = model;
-    //     }
-    //   }
-    //   roomStream.add(room);
-    // }
 
-    // final doc = chatRoomService.db.collection("ChatRoom");
-    // final result =
-    //     doc.where("member", arrayContains: _authService.currentUser?.uid);
-
-    // _chatroomStream = result.snapshots().listen(chatRoomParser);
     on<NewChatRoomEvent>((event, emit) {
       print("new Message Event");
       emit(ChatRoomLoadedState(event.post));

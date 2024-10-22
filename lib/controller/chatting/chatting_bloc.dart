@@ -32,6 +32,7 @@ class ChattingBloc extends Bloc<ChattingEvent, ChattingState> {
     int tryCount = 0;
     int limit = 20;
     on<ChattingRefreshMessageEvent>((_, emit) async {
+      print("data refresh");
       final copied = state.message.toList();
       if (copied.isEmpty) {
         emit(ChattingLoadingState(copied));
@@ -52,17 +53,12 @@ class ChattingBloc extends Bloc<ChattingEvent, ChattingState> {
         limit = 20;
 
         logger.i("trycountget $limit");
-        emit(ChattingSoftLoadingState(copied));
+        emit(ChattingErrorState(copied, "No More Messages"));
       }
       emit(ChattingLoadedState(result.data));
     });
     on<ChattingNewMessageEvent>((event, emit) {
       emit(ChattingLoadedState(event.post));
-    });
-    on<DeleteEvent>((event, emit) async {
-      logger.i("DeleteEvent");
-      await chattingService.deleteMessage(event.messageId);
-      emit(ChattingLoadedState(state.message.toList()));
     });
 
     add(const ChattingGetAllMessageEvent());
@@ -107,21 +103,21 @@ class ChattingBloc extends Bloc<ChattingEvent, ChattingState> {
     await chattingService.sendMessage(payload);
   }
 
-  void sendMessage() async {
-    final message = textEditingController.text;
-    if (message.isEmpty) {
-      return;
-    }
-    textEditingController.clear();
-    final payload = MessageParams.toCreate(
-      chatRoomId: chatRoom.id,
-      data: message,
-      fromUser: _authService.currentUser!.uid,
-    );
-    await chattingService.sendMessage(payload);
+  // void sendMessage() async {
+  //   final message = textEditingController.text;
+  //   if (message.isEmpty) {
+  //     return;
+  //   }
+  //   textEditingController.clear();
+  //   final payload = MessageParams.toCreate(
+  //     chatRoomId: chatRoom.id,
+  //     data: message,
+  //     fromUser: _authService.currentUser!.uid,
+  //   );
+  //   await chattingService.sendMessage(payload);
 
-    focusNode.unfocus();
-  }
+  //   focusNode.unfocus();
+  // }
 
   void toggle() {
     text.value = !text.value;

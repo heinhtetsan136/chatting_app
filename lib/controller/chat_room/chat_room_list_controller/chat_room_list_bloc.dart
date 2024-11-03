@@ -14,6 +14,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 class ChatRoomListBloc extends Bloc<ChatRoomBaseEvent, ChatRoomBaseState> {
   final AuthService _authService = Injection.get<AuthService>();
   StreamSubscription? _chatroomStream;
+
   final TextEditingController textController = TextEditingController();
   final FocusNode focusNode = FocusNode();
   final ChatRoomService chatRoomService = Injection.get<ChatRoomService>();

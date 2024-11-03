@@ -4,6 +4,7 @@ import 'package:blca_project_app/injection.dart';
 import 'package:blca_project_app/logger.dart';
 import 'package:blca_project_app/model/error.dart';
 import 'package:blca_project_app/model/result.dart';
+import 'package:blca_project_app/repo/MessageingService.dart';
 import 'package:blca_project_app/repo/authService.dart';
 import 'package:blca_project_app/repo/chatRoom_model.dart';
 import 'package:blca_project_app/repo/message.dart';
@@ -12,6 +13,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ChatRoomService {
   StreamSubscription? chatRoomStream;
+  final MessagingService _messagingService = Injection.get<MessagingService>();
   final AuthService _authService = Injection.get<AuthService>();
   final FirebaseFirestore db = Injection.get<FirebaseFirestore>();
   Future<Result> _try(Future<Result> Function() callback) async {
@@ -28,15 +30,16 @@ class ChatRoomService {
 
   // Future<Result> createChatRoom()async{
   Future<Result> updateChatRoomFinalMessage(
-      String chatRoomId, Message message) {
+      String chatRoomId, Message message, Timestamp timestamp) {
     return _try(() async {
       final user = _authService.currentUser;
       if (user == null) {
         return const Result(error: GeneralError("User not found"));
       }
+      logger.i("updateChatRoomFinalMessage ${message.sendingTime}");
       final result = await db.collection("ChatRoom").doc(chatRoomId).update({
         "finalMessage": message.data,
-        "finalMessageTime": message.sendingTime
+        "finalMessageDateTime": message.sendingTime
       });
 
       return const Result();
@@ -135,7 +138,7 @@ class ChatRoomService {
 
       final results = await doc
           .where("member", arrayContains: user.uid)
-          .orderBy("finalMessageTime", descending: true)
+          .orderBy("finalMessageDateTime", descending: true)
           .get();
       for (var data in results.docs) {
         final chatrooms = ChatRoom.fromJson(data);

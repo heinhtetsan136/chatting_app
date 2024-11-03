@@ -217,6 +217,7 @@ class ChatRoomTile extends StatelessWidget {
                             },
                           ),
                           Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
                             children: [
                               message.startsWith("https://")
                                   ? const Text("Send a Photo")
@@ -224,6 +225,9 @@ class ChatRoomTile extends StatelessWidget {
                                       message,
                                       overflow: TextOverflow.ellipsis,
                                     ),
+                              const SizedBox(
+                                width: 30,
+                              ),
                               Text(messageDateTime),
                             ],
                           ),

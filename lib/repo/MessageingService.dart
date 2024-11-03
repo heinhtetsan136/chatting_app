@@ -5,6 +5,7 @@ import 'package:blca_project_app/logger.dart';
 import 'package:blca_project_app/model/error.dart';
 import 'package:blca_project_app/model/result.dart';
 import 'package:blca_project_app/repo/authService.dart';
+import 'package:blca_project_app/repo/chatRoom_model.dart';
 import 'package:blca_project_app/repo/chatroom_service.dart';
 import 'package:blca_project_app/repo/message.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -45,6 +46,7 @@ class MessagingService {
       final doc = _db.collection("Message").doc();
       payload.addEntries({MapEntry("id", doc.id)});
       payload.addEntries({MapEntry("sendingTime", Timestamp.now())});
+      logger.i("send message ${payload["sendingTime"]}");
       await doc.set(payload, SetOptions(merge: true));
       _chatRoomService.updateChatRoomFinalMessage(
           message.chatRoomId,
@@ -53,8 +55,10 @@ class MessagingService {
               chatRoomId: message.chatRoomId,
               fromUser: message.fromUser,
               data: message.data,
-              sendingTime: Timestamp.now(),
-              isText: message.isText));
+              sendingTime: payload["sendingTime"],
+              isText: message.isText),
+          Timestamp.now());
+      logger.i("send message ${payload["sendingTime"]}");
       return Result(data: payload);
     });
   }
@@ -85,7 +89,31 @@ class MessagingService {
         final result = await _storage.refFromURL(message.data!).delete();
       }
       await _db.collection("Message").doc(message.id).delete();
-
+      final doc = _db.collection("ChatRoom");
+      await doc.where("id", isEqualTo: message.chatRoomId).get().then((value) {
+        if (value.docs.isNotEmpty) {
+          final data = value.docs.first.data();
+          final chatroom = ChatRoom.fromJson(data);
+          logger.i("chatroo is ${chatroom.finalMessage}");
+          logger.i(
+              "chatroo is ${chatroom.finalMessageDateTime}   and ${message.sendingTime}");
+          if (chatroom.finalMessageDateTime == message.sendingTime) {
+            logger.i(
+                "chatroo is ${chatroom.finalMessageDateTime}   and ${message.sendingTime}");
+            _chatRoomService.updateChatRoomFinalMessage(
+                chatroom.id,
+                Message(
+                    id: "0",
+                    chatRoomId: message.chatRoomId,
+                    fromUser: message.fromUser,
+                    data: "delete message",
+                    sendingTime: Timestamp.now(),
+                    isText: true),
+                Timestamp.now());
+          }
+          logger.i("chatroo is ${chatroom.finalMessage}");
+        }
+      });
       return const Result(data: ());
     });
   }

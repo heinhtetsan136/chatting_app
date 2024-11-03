@@ -218,7 +218,12 @@ class ChatRoomTile extends StatelessWidget {
                           ),
                           Row(
                             children: [
-                              Text(message),
+                              message.startsWith("https://")
+                                  ? const Text("Send a Photo")
+                                  : Text(
+                                      message,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                               Text(messageDateTime),
                             ],
                           ),

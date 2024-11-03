@@ -15,6 +15,7 @@ class MessagingService {
   final ChatRoomService _chatRoomService = Injection.get<ChatRoomService>();
   final FirebaseFirestore _db = Injection.get<FirebaseFirestore>();
   final FirebaseStorage _storage = Injection.get<FirebaseStorage>();
+
   Future<Result> getMessages(String chatRoomId, [int limit = 20]) async {
     return _try(() async {
       final user = _authService.currentUser;
@@ -45,7 +46,15 @@ class MessagingService {
       payload.addEntries({MapEntry("id", doc.id)});
       payload.addEntries({MapEntry("sendingTime", Timestamp.now())});
       await doc.set(payload, SetOptions(merge: true));
-
+      _chatRoomService.updateChatRoomFinalMessage(
+          message.chatRoomId,
+          Message(
+              id: doc.id,
+              chatRoomId: message.chatRoomId,
+              fromUser: message.fromUser,
+              data: message.data,
+              sendingTime: Timestamp.now(),
+              isText: message.isText));
       return Result(data: payload);
     });
   }

@@ -131,28 +131,8 @@ class ChatRoomService {
 
       // }
 
-      final result = await doc
-          .where("member", arrayContains: user.uid)
-          .orderBy("updated_At", descending: true)
-          .get();
       List<ChatRoom> rooms = [];
-      for (var room in result.docs) {
-        final chatroom = ChatRoom.fromJson(room);
-        final messages = await db
-            .collection("Message")
-            .where("chatRoomId", isEqualTo: chatroom.id)
-            .orderBy("sendingTime", descending: true)
-            .get();
-        logger.i("this is messages ${messages.docs}");
-        if (messages.docs.isNotEmpty) {
-          final message = Message.fromJson(messages.docs.first.data());
 
-          await updateChatRoomFinalMessage(chatroom.id, message);
-        } else {
-          await doc.doc(room.id).delete();
-        }
-        logger.i("stream User $chatroom");
-      }
       final results = await doc
           .where("member", arrayContains: user.uid)
           .orderBy("finalMessageTime", descending: true)

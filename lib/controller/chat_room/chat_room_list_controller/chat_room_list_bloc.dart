@@ -4,7 +4,6 @@ import 'package:blca_project_app/controller/chat_room/chat_room_list_controller/
 import 'package:blca_project_app/controller/chat_room/chat_room_list_controller/chat_room_list_state.dart';
 import 'package:blca_project_app/injection.dart';
 import 'package:blca_project_app/logger.dart';
-import 'package:blca_project_app/repo/authService.dart';
 import 'package:blca_project_app/repo/chatRoom_model.dart';
 import 'package:blca_project_app/repo/chatroom_service.dart';
 import 'package:blca_project_app/repo/user_model.dart';
@@ -12,7 +11,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ChatRoomListBloc extends Bloc<ChatRoomBaseEvent, ChatRoomBaseState> {
-  final AuthService _authService = Injection.get<AuthService>();
   StreamSubscription? _chatroomStream;
 
   final TextEditingController textController = TextEditingController();
@@ -20,7 +18,6 @@ class ChatRoomListBloc extends Bloc<ChatRoomBaseEvent, ChatRoomBaseState> {
   final ChatRoomService chatRoomService = Injection.get<ChatRoomService>();
   final StreamController<List<ChatRoom>> roomStream =
       StreamController<List<ChatRoom>>.broadcast();
-  StreamSubscription? _contactStream;
 
   ChatRoomListBloc() : super(const ChatRoomInitialState([])) {
     final List<ChatRoom> room = [];

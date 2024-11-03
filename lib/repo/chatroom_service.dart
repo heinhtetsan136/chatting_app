@@ -13,7 +13,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 class ChatRoomService {
   StreamSubscription? chatRoomStream;
-  final MessagingService _messagingService = Injection.get<MessagingService>();
+
   final AuthService _authService = Injection.get<AuthService>();
   final FirebaseFirestore db = Injection.get<FirebaseFirestore>();
   Future<Result> _try(Future<Result> Function() callback) async {

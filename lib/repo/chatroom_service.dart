@@ -6,6 +6,7 @@ import 'package:blca_project_app/model/error.dart';
 import 'package:blca_project_app/model/result.dart';
 import 'package:blca_project_app/repo/authService.dart';
 import 'package:blca_project_app/repo/chatRoom_model.dart';
+import 'package:blca_project_app/repo/message.dart';
 import 'package:blca_project_app/repo/user_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -26,8 +27,18 @@ class ChatRoomService {
   }
 
   // Future<Result> createChatRoom()async{
-  Future<Result> updatedChatRoom(String chatRoomId) {
+  Future<Result> updateChatRoomFinalMessage(
+      String chatRoomId, Message message) {
     return _try(() async {
+      final user = _authService.currentUser;
+      if (user == null) {
+        return const Result(error: GeneralError("User not found"));
+      }
+      final result = await db.collection("ChatRoom").doc(chatRoomId).update({
+        "finalMessage": message.data,
+        "finalMessageTime": message.sendingTime
+      });
+
       return const Result();
     });
   }
@@ -51,6 +62,21 @@ class ChatRoomService {
         await doc.set(payload, SetOptions(merge: true));
         return Result(data: payload);
       });
+    });
+  }
+
+  Future<Result> deleteChatRoom(ChatRoom room) async {
+    return _try(() async {
+      final result = await db.collection("ChatRoom").doc(room.id).delete();
+      final message = await db
+          .collection("Message")
+          .where("chatRoomId", isEqualTo: room.id)
+          .get();
+      logger.i("this is message ${message.docs.length}");
+      for (var item in message.docs) {
+        await db.collection("Message").doc(item.id).delete();
+      }
+      return const Result(data: null);
     });
   }
 
@@ -90,6 +116,21 @@ class ChatRoomService {
         return const Result(error: GeneralError("User not found"));
       }
       final doc = db.collection("ChatRoom");
+      // final notext = await doc
+      //     .where("member", arrayContains: user.uid)
+      //     .orderBy("updated_At", descending: true)
+      //     .get();
+
+      // for (var rooms in notext.docs) {
+      //   final messages = await db
+      //       .collection("Message")
+      //       .where("chatRoomId", isEqualTo: rooms.id)
+      //       .get();
+      //   final message = Message.fromJson(messages.docs.first.data());
+      //   logger.i("this is messages $messages");
+
+      // }
+
       final result = await doc
           .where("member", arrayContains: user.uid)
           .orderBy("updated_At", descending: true)
@@ -97,9 +138,30 @@ class ChatRoomService {
       List<ChatRoom> rooms = [];
       for (var room in result.docs) {
         final chatroom = ChatRoom.fromJson(room);
+        final messages = await db
+            .collection("Message")
+            .where("chatRoomId", isEqualTo: chatroom.id)
+            .orderBy("sendingTime", descending: true)
+            .get();
+        logger.i("this is messages ${messages.docs}");
+        if (messages.docs.isNotEmpty) {
+          final message = Message.fromJson(messages.docs.first.data());
+
+          await updateChatRoomFinalMessage(chatroom.id, message);
+        } else {
+          await doc.doc(room.id).delete();
+        }
         logger.i("stream User $chatroom");
-        rooms.add(chatroom);
       }
+      final results = await doc
+          .where("member", arrayContains: user.uid)
+          .orderBy("finalMessageTime", descending: true)
+          .get();
+      for (var data in results.docs) {
+        final chatrooms = ChatRoom.fromJson(data);
+        rooms.add(chatrooms);
+      }
+
       return Result(data: rooms);
     });
   }

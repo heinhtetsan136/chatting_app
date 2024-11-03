@@ -10,7 +10,7 @@ import 'package:blca_project_app/repo/message.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
-class Chattingservice {
+class MessagingService {
   final AuthService _authService = Injection.get<AuthService>();
   final ChatRoomService _chatRoomService = Injection.get<ChatRoomService>();
   final FirebaseFirestore _db = Injection.get<FirebaseFirestore>();

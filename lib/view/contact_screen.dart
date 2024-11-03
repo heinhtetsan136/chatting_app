@@ -147,10 +147,12 @@ class HomePage extends StatelessWidget {
 class ChatRoomTile extends StatelessWidget {
   final String otherUserId;
 
-  final String message;
-  final void Function() onTap;
+  final String message, messageDateTime;
+  final void Function() onTap, onLongPress;
   const ChatRoomTile(
       {super.key,
+      required this.messageDateTime,
+      required this.onLongPress,
       required this.otherUserId,
       required this.message,
       required this.onTap});
@@ -160,6 +162,7 @@ class ChatRoomTile extends StatelessWidget {
     final double width = context.width;
     final double height = context.height * 0.1;
     return GestureDetector(
+      onLongPress: onLongPress,
       onTap: onTap,
       child: Card(
         child: Padding(
@@ -213,7 +216,12 @@ class ChatRoomTile extends StatelessWidget {
                               return Text(user.email ?? "No Name");
                             },
                           ),
-                          Text(message),
+                          Row(
+                            children: [
+                              Text(message),
+                              Text(messageDateTime),
+                            ],
+                          ),
                         ],
                       ),
                     ),

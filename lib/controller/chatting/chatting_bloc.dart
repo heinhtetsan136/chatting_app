@@ -24,7 +24,7 @@ class ChattingBloc extends Bloc<ChattingEvent, ChattingState> {
   final ImagePicker _imagePicker = ImagePicker();
   final FocusNode focusNode = FocusNode();
   final TextEditingController textEditingController = TextEditingController();
-  final Chattingservice chattingService = Injection.get<Chattingservice>();
+  final MessagingService chattingService = Injection.get<MessagingService>();
 
   ChattingBloc(super.initialState, this.chatRoom) {
     chattingService.contactListener(contactListener, chatRoom.id);

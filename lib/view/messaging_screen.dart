@@ -12,7 +12,6 @@ import 'package:blca_project_app/view/contact_screen.dart';
 import 'package:blca_project_app/view/setting/widget/network_profile.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:starlight_utils/starlight_utils.dart';
@@ -224,10 +223,14 @@ class MessagingScreen extends StatelessWidget {
             }, builder: (_, state) {
               if (state is SendDataLoadingState) {
                 return const Center(
-                  child: CupertinoActivityIndicator(),
+                  child: LinearProgressIndicator(
+                    backgroundColor: Colors.blue,
+                    color: Colors.green,
+                    minHeight: 2,
+                  ),
                 );
               }
-              return const Text("a");
+              return const SizedBox();
             }),
             Row(
               crossAxisAlignment: CrossAxisAlignment.end,

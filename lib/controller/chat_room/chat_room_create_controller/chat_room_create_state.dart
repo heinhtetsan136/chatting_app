@@ -17,6 +17,10 @@ class ChatRoomCreateSuccessState extends ChatRoomCreateState {
   const ChatRoomCreateSuccessState(this.room);
 }
 
+class ChatRoomDeletedState extends ChatRoomCreateState {
+  const ChatRoomDeletedState();
+}
+
 class ChatRoomCreateErrorState extends ChatRoomCreateState {
   final String error;
   const ChatRoomCreateErrorState(

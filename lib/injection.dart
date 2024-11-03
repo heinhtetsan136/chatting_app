@@ -41,5 +41,5 @@ Future<void> setUp() async {
       dispose: (instance) => instance.dispose());
   Injection.registerLazySingleton(() => FireStoreService());
   Injection.registerLazySingleton(() => ChatRoomService());
-  Injection.registerLazySingleton(() => Chattingservice());
+  Injection.registerLazySingleton(() => MessagingService());
 }

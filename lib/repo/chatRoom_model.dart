@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class ChatRoom {
   final String id;
   final String finalMessage;
+  final Timestamp? finalMessageDateTime;
   final String toUserId;
   final String? photoUrl;
   final DateTime time;
@@ -14,6 +15,7 @@ class ChatRoom {
 
   ChatRoom({
     required this.updated_At,
+    this.finalMessageDateTime,
     required this.id,
     required this.member,
     required this.finalMessage,
@@ -26,9 +28,10 @@ class ChatRoom {
   factory ChatRoom.fromJson(dynamic data) {
     logger.wtf(data["updated_At"]);
     return ChatRoom(
+      finalMessageDateTime: data["finalMessageDateTime"],
       updated_At: data["updated_At"],
       id: data["id"],
-      finalMessage: data["text"],
+      finalMessage: data["finalMessage"],
       photoUrl: data["photoUrl"],
       member: data["member"] ?? [],
       time: DateTime.parse(data["time"]),
@@ -51,6 +54,7 @@ class ChatRoom {
     return {
       "id": id,
       "text": finalMessage,
+      "finalMessageDateTime": finalMessageDateTime,
       "photoUrl": photoUrl,
       "member": member,
       "time": time.toIso8601String(),
@@ -64,6 +68,7 @@ class ChatRoom {
 
 class ChatRoomParams {
   final String finalMessage;
+  final Timestamp finalMessageDateTime;
   final String? photoUrl;
   final List member;
   final String toUserName;
@@ -74,6 +79,7 @@ class ChatRoomParams {
   ChatRoomParams({
     required this.toUserId,
     required this.finalMessage,
+    required this.finalMessageDateTime,
     required this.member,
     this.photoUrl,
     required this.fromUserId,
@@ -81,7 +87,8 @@ class ChatRoomParams {
     required this.Updated_At,
   });
   factory ChatRoomParams.toCreate({
-    required String text,
+    required String finalMessage,
+    required Timestamp finalMessageDateTime,
     required List<String> member,
     required String formUserId,
     required String toUserId,
@@ -89,9 +96,10 @@ class ChatRoomParams {
     required Timestamp Updated_At,
   }) {
     return ChatRoomParams(
+        finalMessageDateTime: finalMessageDateTime,
         Updated_At: Updated_At,
         toUserName: toUserName,
-        finalMessage: text,
+        finalMessage: finalMessage,
         fromUserId: formUserId,
         member: member,
         toUserId: toUserId);
@@ -99,13 +107,14 @@ class ChatRoomParams {
   Map<String, dynamic> toCreate() {
     return {
       "member": member,
-      "text": finalMessage,
+      "finalMessage": finalMessage,
       "photoUrl": photoUrl,
       "fromUserId": fromUserId,
       "time": DateTime.now().toIso8601String(),
       "toUserId": toUserId,
       "toUserName": toUserName,
-      "updated_At": Updated_At
+      "updated_At": Updated_At,
+      "finalMessageDateTime": finalMessageDateTime
     };
   }
 }

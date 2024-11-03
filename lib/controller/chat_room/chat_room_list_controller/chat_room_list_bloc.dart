@@ -33,8 +33,8 @@ class ChatRoomListBloc extends Bloc<ChatRoomBaseEvent, ChatRoomBaseState> {
       if (state is ChatRoomLoadingState || state is ChatRoomSoftLoadingState) {
         return;
       }
-      print("this is get ${state.message}");
-      final messages = state.message;
+      print("this is get ${state.room}");
+      final messages = state.room;
       if (messages.isEmpty) {
         emit(ChatRoomLoadingState(messages));
       } else {
@@ -48,23 +48,28 @@ class ChatRoomListBloc extends Bloc<ChatRoomBaseEvent, ChatRoomBaseState> {
 
       emit(ChatRoomLoadedState(result.data!));
     });
+
     on<RefreshChatRoomEvent>((event, emit) async {
       print("refresh Message Event");
-      final messages = state.message;
+      final messages = state.room;
+
       if (messages.isEmpty) {
         emit(ChatRoomLoadingState(messages));
       }
+      emit(ChatRoomSoftLoadingState(messages));
       final result = await chatRoomService.getListOfChatRoom();
       if (result.hasError) {
         emit(ChatRoomErrorState(result.error!.message, messages));
       }
       emit(ChatRoomLoadedState(result.data!));
     });
+
     add(GetChatRoomEvent());
     chatRoomService.contactListener(contactListener);
   }
+
   void contactListener(ChatRoom room) {
-    final copied = state.message.toList();
+    final copied = state.room.toList();
     if (copied.isEmpty) {
       add(GetChatRoomEvent());
       return;

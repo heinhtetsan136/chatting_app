@@ -1,3 +1,4 @@
+import 'package:blca_project_app/repo/chatRoom_model.dart';
 import 'package:blca_project_app/repo/user_model.dart';
 
 abstract class ChatRoomCreateEvent {
@@ -5,6 +6,11 @@ abstract class ChatRoomCreateEvent {
 }
 
 class ChatRoomOnCreateEvent extends ChatRoomCreateEvent {
-  final ContactUser other;
-  const ChatRoomOnCreateEvent(this.other);
+  final ContactUser room;
+  const ChatRoomOnCreateEvent(this.room);
+}
+
+class ChatRoomDeleteEvent extends ChatRoomCreateEvent {
+  final ChatRoom room;
+  ChatRoomDeleteEvent(this.room);
 }

@@ -20,13 +20,14 @@ class ChatRoomCreateBloc
       emit(const ChatRoomCreateLoadingState());
       final chatRoomParams = ChatRoomParams.toCreate(
           Updated_At: Timestamp.now(),
-          toUserName: event.other.email,
-          text: " ",
-          member: [_authService.currentUser!.uid, event.other.uid],
+          toUserName: event.room.email,
+          finalMessageDateTime: Timestamp.now(),
+          finalMessage: " ",
+          member: [_authService.currentUser!.uid, event.room.uid],
           formUserId: _authService.currentUser!.uid,
-          toUserId: event.other.uid);
+          toUserId: event.room.uid);
       final result = await chatRoomService.checkChatRoomCreateifNotExist(
-          event.other, chatRoomParams);
+          event.room, chatRoomParams);
       logger.i("result bloc create ${result.data}");
       if (result.hasError) {
         emit(ChatRoomCreateErrorState(result.error!.message.toString()));
@@ -34,6 +35,19 @@ class ChatRoomCreateBloc
       }
       emit(ChatRoomCreateSuccessState(ChatRoom.fromJson(result.data)));
       logger.i("in old room");
+    });
+
+    on<ChatRoomDeleteEvent>((event, emit) async {
+      logger.i("delete Message Event");
+      final result = await chatRoomService.deleteChatRoom(event.room);
+      if (result.hasError) {
+        emit(ChatRoomCreateErrorState(
+          result.error!.message.toString(),
+        ));
+      }
+      logger.i("chatroom delete");
+
+      emit(const ChatRoomDeletedState());
     });
   }
 }

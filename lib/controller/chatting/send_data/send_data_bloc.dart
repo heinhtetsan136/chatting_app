@@ -23,7 +23,7 @@ class SendDataBloc extends Bloc<SendDataBaseEvent, SendDataBaseState> {
   final FocusNode editFocusNode = FocusNode();
   final FocusNode focusNode = FocusNode();
   final FirebaseStorage _firebaseStorage = Injection.get<FirebaseStorage>();
-  final Chattingservice chattingService = Injection.get<Chattingservice>();
+  final MessagingService chattingService = Injection.get<MessagingService>();
   final AuthService _authService = Injection.get<AuthService>();
   final FireStoreService _storeService = Injection.get<FireStoreService>();
   SendDataBloc(this.chatRoom)

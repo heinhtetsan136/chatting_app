@@ -69,9 +69,6 @@ class MessagingScreen extends StatelessWidget {
                           maxRadius: 20,
                           child: Text(
                             shortName,
-                            style: const TextStyle(
-                              fontSize: 28,
-                            ),
                           ),
                         );
                       }
@@ -82,9 +79,6 @@ class MessagingScreen extends StatelessWidget {
                           maxRadius: 20,
                           child: Text(
                             shortName,
-                            style: const TextStyle(
-                              fontSize: 28,
-                            ),
                           ),
                         ),
                       );
@@ -94,8 +88,6 @@ class MessagingScreen extends StatelessWidget {
                     child: OtherUserNames(
                         builder: (user) => Text(
                               user.email ?? "No Name",
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.w400, fontSize: 20),
                             ),
                         otherUserId: user[0] == auth.currentUser!.uid
                             ? user[1]
@@ -142,7 +134,6 @@ class MessagingScreen extends StatelessWidget {
                         children: [
                           Text(
                             """ ${(date.difference(DateTime.now()).inMinutes * -1) > 60 ? ("${months[date.month - 1]}${(date.difference(DateTime.now()).inHours * -1) > 12 ? "${date.day} At ${date.hour - 12 == -12 ? "12" : date.hour > 12 ? date.hour - 12 : date.hour}: ${date.minute > 10 ? date.minute : "0${date.minute}"} ${date.hour > 12 ? "PM" : "AM"} " : "${date.hour > 12 ? date.hour - 12 : date.hour}:${date.minute > 10 ? date.minute : "0${date.minute}"} ${date.hour > 12 ? "PM" : "AM"} "} ") : ("${date.hour > 12 ? date.hour - 12 : date.hour}:${date.minute > 10 ? date.minute : "0${date.minute}"} ${date.hour > 12 ? "PM" : "AM"}")}  """,
-                            style: const TextStyle(fontWeight: FontWeight.w300),
                           ),
                           if (isImage)
                             Align(
@@ -194,7 +185,6 @@ class MessagingScreen extends StatelessWidget {
                                     padding: const EdgeInsets.all(10),
                                     child: Text(
                                       " ${messages[i].data}",
-                                      style: const TextStyle(),
                                     ),
                                   ),
                                 ),
@@ -238,7 +228,6 @@ class MessagingScreen extends StatelessWidget {
                 SizedBox(
                     width: context.width * 0.67,
                     child: TextFormField(
-                      style: const TextStyle(),
                       keyboardType: TextInputType.multiline,
                       maxLines: 10,
                       minLines: 1,
@@ -288,10 +277,9 @@ class Gesture extends StatelessWidget {
     return GestureDetector(
         onLongPress: () {
           StarlightUtils.dialog(Dialog(
-              child: Container(
+              child: SizedBox(
             height: 300,
             width: 200,
-            color: Colors.green,
             child: Column(
               children: [
                 const Text("Choose Your Option"),
@@ -303,86 +291,3 @@ class Gesture extends StatelessWidget {
         child: child);
   }
 }
-
-                 
- // isImage
-                                          //     ? const SizedBox()
-                                          //     : ListTile(
-                                          //         title: const Text("Edit"),
-                                          //         onTap: () async {
-                                          //           StarlightUtils.pop();
-                                          //           sendData.edit.text =
-                                          //               message.data ?? "";
-                                          //           final result =
-                                          //               await StarlightUtils
-                                          //                   .dialog(Dialog(
-                                          //                       child:
-                                          //                           Container(
-                                          //             decoration: BoxDecoration(
-                                          //                 borderRadius:
-                                          //                     BorderRadius
-                                          //                         .circular(
-                                          //                             10)),
-                                          //             padding: const EdgeInsets
-                                          //                 .symmetric(
-                                          //                 horizontal: 10),
-                                          //             width: context.width,
-                                          //             height:
-                                          //                 context.height * 0.4,
-                                          //             child: Column(
-                                          //               mainAxisAlignment:
-                                          //                   MainAxisAlignment
-                                          //                       .center,
-                                          //               children: [
-                                          //                 TextFormField(
-                                          //                   onEditingComplete:
-                                          //                       () {
-                                          //                     sendData
-                                          //                         .editFocusNode
-                                          //                         .unfocus();
-                                          //                   },
-                                          //                   controller:
-                                          //                       sendData.edit,
-                                          //                   style:
-                                          //                       const TextStyle(),
-                                          //                   keyboardType:
-                                          //                       TextInputType
-                                          //                           .multiline,
-                                          //                   maxLines: 10,
-                                          //                   minLines: 1,
-                                          //                   focusNode: sendData
-                                          //                       .editFocusNode,
-                                          //                   decoration: InputDecoration(
-                                          //                       isDense: true,
-                                          //                       border: OutlineInputBorder(
-                                          //                           borderRadius:
-                                          //                               BorderRadius.circular(
-                                          //                                   9))),
-                                          //                 ),
-                                          //                 ElevatedButton(
-                                          //                     onPressed: () {
-                                          //                       sendData
-                                          //                           .editFocusNode
-                                          //                           .unfocus();
-                                          //                       sendData.add(
-                                          //                           UpdateMessageEvent(
-                                          //                         message.id,
-                                          //                       ));
-                                          //                       messagebloc.add(
-                                          //                           const ChattingRefreshMessageEvent());
-                                          //                       StarlightUtils
-                                          //                           .pop();
-                                          //                     },
-                                          //                     child: const Text(
-                                          //                         "Update")),
-                                          //               ],
-                                          //             ),
-                                          //           )));
-
-                                          //           // sendData.add(UpdateMessageEvent(
-                                          //           //     message.id,
-                                          //           //     message.data ?? ""));
-                                          //           // messagebloc.add(
-                                          //           //     const ChattingRefreshMessageEvent());
-                                          //         },
-                                          //       ),

@@ -20,7 +20,6 @@ class ProfileSettingCard extends StatelessWidget {
       trailing: NetworkUserInfo(builder: (data) {
         return Text(
           value(data),
-          style: const TextStyle(fontSize: 14),
         );
       }),
     );

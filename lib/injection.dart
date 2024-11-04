@@ -9,13 +9,16 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final Injection = GetIt.instance;
 Future<void> setUp() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-
+  final SharedPreferences sharedPreferences =
+      await SharedPreferences.getInstance();
+  Injection.registerLazySingleton(() => sharedPreferences);
   await FirebaseAppCheck.instance.activate(
     // You can also use a `ReCaptchaEnterpriseProvider` provider instance as an
     // argument for `webProvider`

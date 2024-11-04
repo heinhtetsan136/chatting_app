@@ -5,6 +5,8 @@ import 'package:blca_project_app/route/route.dart';
 import 'package:blca_project_app/view/chat_room_screen.dart';
 import 'package:blca_project_app/view/contact_screen.dart';
 import 'package:blca_project_app/view/homeScreen/post_screen.dart';
+import 'package:blca_project_app/view/setting/widget/network_profile.dart';
+import 'package:blca_project_app/view/setting/widget/network_user_info.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:starlight_utils/starlight_utils.dart';
@@ -25,29 +27,106 @@ class HomeScreen extends StatelessWidget {
       child: Scaffold(
           appBar: AppBar(
             actions: [
-              IconButton(
-                  onPressed: () {
-                    StarlightUtils.pushNamed(RouteNames.settingPage);
-                  },
-                  icon: const Icon(Icons.settings))
+              Row(
+                children: [
+                  IconButton(
+                      onPressed: () {
+                        StarlightUtils.pushNamed(RouteNames.search);
+                      },
+                      icon: const Icon(Icons.search)),
+                  IconButton(
+                      onPressed: () {
+                        StarlightUtils.pushNamed(RouteNames.settingPage);
+                      },
+                      icon: const Icon(Icons.settings)),
+                ],
+              )
             ],
           ),
           drawer: Drawer(
-            child: ListView(
-              children: [
-                const DrawerHeader(
-                  decoration: BoxDecoration(
-                    color: Colors.blue,
+            width: context.width * 0.9,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 3.0, bottom: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  DrawerHeader(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        NetworkUserInfo(builder: (data) {
+                          final shortName = data.email?[0] ?? data.uid[0];
+                          // final shortName = data.displayName?[0] ??
+                          //     data.email?[0] ??
+                          //     data.uid[0];
+                          final profileUrl = data.photoURL ?? "";
+                          if (profileUrl.isEmpty == true) {
+                            return CircleAvatar(
+                              maxRadius: 48,
+                              child: Text(
+                                shortName,
+                              ),
+                            );
+                          }
+                          return NetworkProfile(
+                            radius: 42,
+                            profileUrl: profileUrl,
+                            onFail: CircleAvatar(
+                              maxRadius: 42,
+                              child: Text(
+                                shortName,
+                              ),
+                            ),
+                          );
+                        }),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: NetworkUserInfo(
+                            builder: (user) {
+                              return Text(
+                                  user.displayName?.isNotEmpty == true
+                                      ? user.displayName!
+                                      : user.email?.isNotEmpty == true
+                                          ? user.email!
+                                          : "Anonymous",
+                                  style: TextStyle(
+                                      fontSize: 20,
+                                      color: context
+                                          .theme.textTheme.bodyLarge?.color));
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  child: Text("Drawer Header"),
-                ),
-                ListTile(
-                  title: const Text("Logout"),
-                  onTap: () {
-                    homePageBloc.add(const SignoutEvent());
-                  },
-                )
-              ],
+                  Expanded(
+                      child: Column(
+                    children: [
+                      ListTile(
+                        title: const Text("Profile"),
+                        onTap: () {
+                          StarlightUtils.pushNamed(RouteNames.profile);
+                        },
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8.0),
+                        child: ListTile(
+                          title: const Text("Settings"),
+                          onTap: () {
+                            StarlightUtils.pushNamed(RouteNames.settingPage);
+                          },
+                        ),
+                      ),
+                    ],
+                  )),
+                  ListTile(
+                    title: const Text("Logout"),
+                    onTap: () {
+                      homePageBloc.add(const SignoutEvent());
+                    },
+                  )
+                ],
+              ),
             ),
           ),
           resizeToAvoidBottomInset: false,

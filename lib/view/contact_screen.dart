@@ -20,28 +20,24 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = context.theme;
     final chatRoomListBloc = context.read<ChatRoomListBloc>();
     final contactbloc = context.read<ContactBloc>();
     final createChatRoom = context.read<ChatRoomCreateBloc>();
-
+    final listTiletheme = context.theme.listTileTheme
+        .copyWith(tileColor: context.theme.scaffoldBackgroundColor);
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 5),
         child: Stack(
           children: [
             Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextFormField(
-                  decoration: const InputDecoration(
-                    isDense: true,
-                    suffixIcon: Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(10)),
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  height: 20,
+                Text(
+                  "Contact List",
+                  style: TextStyle(
+                      fontSize: 20, color: theme.textTheme.bodyLarge?.color),
                 ),
                 Expanded(
                   child: BlocBuilder<ContactBloc, ContactBaseState>(
@@ -68,7 +64,7 @@ class HomePage extends StatelessWidget {
                       child: ListView.separated(
                           separatorBuilder: (_, i) {
                             return const SizedBox(
-                              height: 20,
+                              height: 4,
                             );
                           },
                           itemCount: state.posts.length,
@@ -78,6 +74,8 @@ class HomePage extends StatelessWidget {
                                 state.posts[i].uid[0];
                             final profileUrl = state.posts[i].photoURL;
                             return ListTile(
+                              tileColor: listTiletheme.tileColor,
+                              contentPadding: const EdgeInsets.all(5),
                               onTap: () {
                                 createChatRoom
                                     .add(ChatRoomOnCreateEvent(state.posts[i]));
@@ -87,9 +85,6 @@ class HomePage extends StatelessWidget {
                                       maxRadius: 50,
                                       child: Text(
                                         shortName,
-                                        style: const TextStyle(
-                                          fontSize: 28,
-                                        ),
                                       ),
                                     )
                                   : NetworkProfile(
@@ -98,9 +93,6 @@ class HomePage extends StatelessWidget {
                                         maxRadius: 35,
                                         child: Text(
                                           shortName,
-                                          style: const TextStyle(
-                                            fontSize: 28,
-                                          ),
                                         ),
                                       ),
                                       profileUrl: profileUrl ?? "",
@@ -161,93 +153,110 @@ class ChatRoomTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final double width = context.width;
     final double height = context.height * 0.1;
+    final theme = context.theme;
+    final textColor = theme.textTheme.bodyLarge?.color;
     return GestureDetector(
       onLongPress: onLongPress,
       onTap: onTap,
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 10),
-          child: SizedBox(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+        decoration: BoxDecoration(
+          color: theme.bottomNavigationBarTheme.backgroundColor,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    OtherUserNames(
-                        otherUserId: otherUserId,
-                        builder: (user) {
-                          final shortName = user.email[0] ?? user.uid[0];
-                          final profileUrl = user.photoURL ?? "";
-                          if (profileUrl.isEmpty == true) {
-                            return CircleAvatar(
-                              maxRadius: 20,
-                              child: Text(
-                                shortName,
-                                style: const TextStyle(
-                                  fontSize: 28,
-                                ),
-                              ),
-                            );
-                          }
-                          return NetworkProfile(
-                            radius: 20,
-                            profileUrl: profileUrl,
-                            onFail: CircleAvatar(
-                              maxRadius: 20,
-                              child: Text(
-                                shortName,
-                                style: const TextStyle(
-                                  fontSize: 28,
-                                ),
-                              ),
-                            ),
-                          );
-                        }),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 10.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
+                OtherUserNames(
+                    otherUserId: otherUserId,
+                    builder: (user) {
+                      final shortName = user.email[0] ?? user.uid[0];
+                      final profileUrl = user.photoURL ?? "";
+                      if (profileUrl.isEmpty == true) {
+                        return CircleAvatar(
+                          maxRadius: 20,
+                          child: Text(
+                            shortName,
+                          ),
+                        );
+                      }
+                      return NetworkProfile(
+                        radius: 20,
+                        profileUrl: profileUrl,
+                        onFail: CircleAvatar(
+                          maxRadius: 20,
+                          child: Text(
+                            shortName,
+                          ),
+                        ),
+                      );
+                    }),
+                Padding(
+                  padding: const EdgeInsets.only(left: 10.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Row(
                         children: [
                           OtherUserNames(
                             otherUserId: otherUserId,
                             builder: (user) {
-                              return Text(user.email ?? "No Name");
+                              return Text(
+                                user.displayName ?? user.email ?? "No Name",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: textColor,
+                                ),
+                              );
                             },
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              message.startsWith("https://")
-                                  ? const Text("Send a Photo")
-                                  : Text(
-                                      message,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                              const SizedBox(
-                                width: 30,
-                              ),
-                              Text(messageDateTime),
-                            ],
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8, left: 5),
+                            child: Container(
+                              decoration: const BoxDecoration(
+                                  shape: BoxShape.circle, color: Colors.green),
+                              width: 6,
+                              height: 6,
+                            ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
-                ),
-                Padding(
-                  padding: const EdgeInsets.only(top: 4.0),
-                  child: Container(
-                    decoration: const BoxDecoration(
-                        shape: BoxShape.circle, color: Colors.green),
-                    width: 16,
-                    height: 16,
+                      Row(
+                        children: [
+                          message.startsWith("https://")
+                              ? const Text("Send a Photo")
+                              : Text(
+                                  message,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w400,
+                                    color: textColor,
+                                  ),
+                                ),
+                          const SizedBox(
+                            width: 30,
+                          ),
+                          Text(
+                            messageDateTime,
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w200,
+                              color: textColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ],
             ),
-          ),
+          ],
         ),
       ),
     );

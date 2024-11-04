@@ -18,6 +18,7 @@ import 'package:blca_project_app/view/auth/login_page.dart';
 import 'package:blca_project_app/view/auth/sign_up_page.dart';
 import 'package:blca_project_app/view/homeScreen/home.dart';
 import 'package:blca_project_app/view/messaging_screen.dart';
+import 'package:blca_project_app/view/search_screen.dart';
 import 'package:blca_project_app/view/setting/profile_page.dart';
 import 'package:blca_project_app/view/setting/setting_page.dart';
 import 'package:blca_project_app/view/setting/update_user_info.dart';
@@ -61,6 +62,8 @@ Route? router(RouteSettings settings) {
               create: (_) => ResgisterBloc(const RegisterInitialState()),
               child: const SignUpPage()),
           settings);
+    case RouteNames.search:
+      return _protectedRoute(incomingRoute, const SearchScreen(), settings);
     case RouteNames.profile:
       return _protectedRoute(incomingRoute, const ProfilePage(), settings);
     case RouteNames.homePage:

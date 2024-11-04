@@ -1,9 +1,11 @@
 import 'package:blca_project_app/controller/login/login_bloc.dart';
+import 'package:blca_project_app/controller/theme/theme_cubit.dart';
 import 'package:blca_project_app/injection.dart';
 import 'package:blca_project_app/repo/authService.dart';
 import 'package:blca_project_app/route/route.dart';
 import 'package:blca_project_app/view/auth/login_page.dart';
 import 'package:blca_project_app/view/setting/widget/profile_card.dart';
+import 'package:blca_project_app/view/setting/widget/switch_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:starlight_utils/starlight_utils.dart';
@@ -69,6 +71,19 @@ class SettingPage extends StatelessWidget {
                         email: data.email!),
                   );
                 }),
+            BlocBuilder<ThemeCubit, ThemeMode>(builder: (context, state) {
+              return SwitchCard(
+                onTap: (value) {
+                  context.read<ThemeCubit>().toggleTheme();
+                },
+                title: "Theme",
+                current: state == ThemeMode.light ? "light" : "dark",
+                first: "light",
+                second: "dark",
+                firstWidget: const Icon(Icons.brightness_5),
+                secondWidget: const Icon(Icons.brightness_2),
+              );
+            }),
             const OnTapCard(
               onTap: _termsAndConditions,
               title: "Terms and Conditions",
@@ -122,9 +137,6 @@ class LogoutButton extends StatelessWidget {
       onPressed: _logout,
       child: Text(
         "Logout",
-        style: TextStyle(
-          fontSize: 18,
-        ),
       ),
     );
   }
@@ -144,14 +156,12 @@ class OnTapCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
-      child: ListTile(
-        onTap: onTap,
-        title: Text(
-          title,
-          style: const TextStyle(),
-        ),
-      ),
-    );
+        padding: const EdgeInsets.only(top: 10, left: 10, right: 10),
+        child: ListTile(
+          onTap: onTap,
+          title: Text(
+            title,
+          ),
+        ));
   }
 }

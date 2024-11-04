@@ -55,7 +55,7 @@ dependencies:
   firebase_auth: 
   cloud_firestore: 
   firebase_storage:
-
+  animated_toggle_switch: ^0.8.1
 dev_dependencies:
   flutter_test:
     sdk: flutter

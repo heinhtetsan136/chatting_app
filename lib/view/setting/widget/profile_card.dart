@@ -1,5 +1,6 @@
 import 'package:blca_project_app/view/setting/widget/network_profile.dart';
 import 'package:flutter/material.dart';
+import 'package:starlight_utils/starlight_utils.dart';
 
 class ProfileCard extends StatelessWidget {
   final String profileUrl, shortName, displayName, email;
@@ -14,6 +15,8 @@ class ProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = context.theme;
+    final textColor = theme.textTheme.bodyLarge?.color;
     return Container(
       margin: const EdgeInsets.only(
         bottom: 10,
@@ -22,7 +25,7 @@ class ProfileCard extends StatelessWidget {
       ),
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: const Color.fromRGBO(239, 239, 243, 1),
+        color: theme.bottomNavigationBarTheme.backgroundColor,
         borderRadius:
             BorderRadius.circular(8), // Color.fromRGBO(r, g, b, opacity)
       ),
@@ -31,12 +34,8 @@ class ProfileCard extends StatelessWidget {
           if (profileUrl.isEmpty == true)
             CircleAvatar(
               maxRadius: 35,
-              child: Text(
-                shortName,
-                style: const TextStyle(
-                  fontSize: 28,
-                ),
-              ),
+              child: Text(shortName,
+                  style: TextStyle(fontSize: 28, color: textColor)),
             )
           else
             NetworkProfile(
@@ -45,8 +44,9 @@ class ProfileCard extends StatelessWidget {
                 maxRadius: 35,
                 child: Text(
                   shortName,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 28,
+                    color: textColor,
                   ),
                 ),
               ),
@@ -61,14 +61,16 @@ class ProfileCard extends StatelessWidget {
                 children: [
                   Text(
                     displayName,
-                    style: const TextStyle(
+                    style: TextStyle(
+                      color: textColor,
                       fontSize: 20,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   Text(
                     email,
-                    style: const TextStyle(
+                    style: TextStyle(
+                      color: textColor,
                       fontSize: 16,
                       fontWeight: FontWeight.w400,
                     ),

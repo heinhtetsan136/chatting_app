@@ -52,30 +52,18 @@ class SignUpPage extends StatelessWidget {
                     children: [
                       Text(
                         "BLCA",
-                        style: TextStyle(
-                            color: Colors.blue,
-                            fontSize: 40,
-                            fontWeight: FontWeight.w900),
                       ),
                       SizedBox(
                         width: 2,
                       ),
                       Text(
                         "App",
-                        style: TextStyle(
-                          fontSize: 25,
-                          color: Colors.blue,
-                        ),
                       ),
                     ],
                   ),
                 ),
                 const Text(
                   "Sign Up",
-                  style: TextStyle(
-                      fontSize: 35,
-                      color: Colors.blue,
-                      fontWeight: FontWeight.w500),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 50, bottom: 20),
@@ -84,10 +72,6 @@ class SignUpPage extends StatelessWidget {
                     children: [
                       const Text(
                         "Email",
-                        style: TextStyle(
-                            color: Colors.blue,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600),
                       ),
                       TextFormField(
                         keyboardType: TextInputType.emailAddress,
@@ -115,10 +99,6 @@ class SignUpPage extends StatelessWidget {
                   children: [
                     const Text(
                       "Password",
-                      style: TextStyle(
-                          color: Colors.blue,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600),
                     ),
                     ValueListenableBuilder(
                         valueListenable: registerbloc.passwordIsShow,

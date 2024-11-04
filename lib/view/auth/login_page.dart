@@ -40,30 +40,18 @@ class LoginPage extends StatelessWidget {
                     children: [
                       Text(
                         "BLCA",
-                        style: TextStyle(
-                            color: Colors.blue,
-                            fontSize: 40,
-                            fontWeight: FontWeight.w900),
                       ),
                       SizedBox(
                         width: 2,
                       ),
                       Text(
                         "App",
-                        style: TextStyle(
-                          fontSize: 25,
-                          color: Colors.blue,
-                        ),
                       ),
                     ],
                   ),
                 ),
                 const Text(
                   "Login",
-                  style: TextStyle(
-                      fontSize: 35,
-                      color: Colors.blue,
-                      fontWeight: FontWeight.w500),
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 50, bottom: 20),
@@ -72,10 +60,6 @@ class LoginPage extends StatelessWidget {
                     children: [
                       const Text(
                         "Email",
-                        style: TextStyle(
-                            color: Colors.blue,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600),
                       ),
                       TextFormField(
                         autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -105,10 +89,6 @@ class LoginPage extends StatelessWidget {
                   children: [
                     const Text(
                       "Password",
-                      style: TextStyle(
-                          color: Colors.blue,
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600),
                     ),
                     Padding(
                       padding: const EdgeInsets.only(bottom: 30),

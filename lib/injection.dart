@@ -1,5 +1,6 @@
 import 'package:blca_project_app/firebase_options.dart';
 import 'package:blca_project_app/repo/MessageingService.dart';
+import 'package:blca_project_app/repo/agoraService/agoraService.dart';
 import 'package:blca_project_app/repo/authService.dart';
 import 'package:blca_project_app/repo/chatroom_service.dart';
 import 'package:blca_project_app/repo/firestoreService.dart';
@@ -37,11 +38,13 @@ Future<void> setUp() async {
     // 4. App Attest provider with fallback to Device Check provider (App Attest provider is only available on iOS 14.0+, macOS 14.0+)
     appleProvider: AppleProvider.appAttest,
   );
+
   Injection.registerLazySingleton(() => ImagePicker());
   Injection.registerLazySingleton(() => FirebaseFirestore.instance);
   Injection.registerLazySingleton(() => FirebaseStorage.instance);
   Injection.registerSingleton(AuthService(),
       dispose: (instance) => instance.dispose());
+  Injection.registerLazySingleton(() => AgoraService());
   Injection.registerLazySingleton(() => FireStoreService());
   Injection.registerLazySingleton(() => ChatRoomService());
   Injection.registerLazySingleton(() => MessagingService());

@@ -36,6 +36,8 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.2
   starlight_utils: ^0.0.3
+  permission_handler:
+  agora_rtc_engine:
   equatable: ^2.0.5
   get_it: ^7.7.0
   dartz: ^0.10.1

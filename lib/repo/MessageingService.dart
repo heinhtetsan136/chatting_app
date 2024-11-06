@@ -153,4 +153,12 @@ class MessagingService {
       }
     });
   }
+
+  Future close(ChatRoom chatroomId) async {
+    await messagesstream?.cancel();
+    final result = await _chatRoomService.getChatRoom(chatroomId.id);
+    if (result.data == false) {
+      _chatRoomService.deleteChatRoom(chatroomId);
+    }
+  }
 }

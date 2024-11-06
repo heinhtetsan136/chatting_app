@@ -8,6 +8,7 @@ import 'package:blca_project_app/injection.dart';
 import 'package:blca_project_app/logger.dart';
 import 'package:blca_project_app/repo/authService.dart';
 import 'package:blca_project_app/repo/chatRoom_model.dart';
+import 'package:blca_project_app/route/route.dart';
 import 'package:blca_project_app/view/contact_screen.dart';
 import 'package:blca_project_app/view/setting/widget/network_profile.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -91,7 +92,17 @@ class MessagingScreen extends StatelessWidget {
                             ),
                         otherUserId: user[0] == auth.currentUser!.uid
                             ? user[1]
-                            : user[0]))
+                            : user[0])),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    IconButton(
+                        onPressed: () {
+                          StarlightUtils.pushNamed(RouteNames.call);
+                        },
+                        icon: const Icon(Icons.call)),
+                  ],
+                ),
               ],
             ),
             Expanded(

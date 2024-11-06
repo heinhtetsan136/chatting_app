@@ -4,7 +4,6 @@ import 'package:blca_project_app/injection.dart';
 import 'package:blca_project_app/logger.dart';
 import 'package:blca_project_app/model/error.dart';
 import 'package:blca_project_app/model/result.dart';
-import 'package:blca_project_app/repo/MessageingService.dart';
 import 'package:blca_project_app/repo/authService.dart';
 import 'package:blca_project_app/repo/chatRoom_model.dart';
 import 'package:blca_project_app/repo/message.dart';
@@ -26,6 +25,21 @@ class ChatRoomService {
       print("error is ${e.toString()}");
       return const Result(error: GeneralError("Something went wrong"));
     }
+  }
+
+  Future<Result> getChatRoom(String chatRoomId) async {
+    return _try(() async {
+      final data = await db
+          .collection("ChatRoom")
+          .where("id", isEqualTo: chatRoomId)
+          .get();
+      final chatroom = ChatRoom.fromJson(data.docs.first.data());
+      if (chatroom.finalMessage.isNotEmpty != true) {
+        return const Result(data: false);
+      }
+
+      return const Result(data: true);
+    });
   }
 
   // Future<Result> createChatRoom()async{

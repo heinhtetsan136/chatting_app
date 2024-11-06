@@ -16,6 +16,7 @@ import 'package:blca_project_app/repo/chatRoom_model.dart';
 import 'package:blca_project_app/route/route.dart';
 import 'package:blca_project_app/view/auth/login_page.dart';
 import 'package:blca_project_app/view/auth/sign_up_page.dart';
+import 'package:blca_project_app/view/call/call.dart';
 import 'package:blca_project_app/view/homeScreen/home.dart';
 import 'package:blca_project_app/view/messaging_screen.dart';
 import 'package:blca_project_app/view/search_screen.dart';
@@ -103,6 +104,8 @@ Route? router(RouteSettings settings) {
               create: (_) => ProfileSettingBloc(),
               child: const UpdateUserInfo()),
           settings);
+    case RouteNames.call:
+      return _protectedRoute(incomingRoute, const Call(), settings);
     case RouteNames.settingPage:
       return _protectedRoute(incomingRoute, const SettingPage(), settings);
     default:

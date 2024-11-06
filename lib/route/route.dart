@@ -8,5 +8,6 @@ class RouteNames {
       updatePassword = "/profilePage/updatePassword",
       search = "/homePage/search",
       profile = "/profilePage",
+      call = "/call",
       messaging = "/chatRoom";
 }

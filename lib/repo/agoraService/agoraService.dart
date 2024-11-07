@@ -38,6 +38,17 @@ class AgoraHandler {
     required this.onLeaveChannel,
     required this.onError,
   });
+  factory AgoraHandler.dummy() {
+    return AgoraHandler(
+      onJoinChannelSuccess: (_, __) {},
+      onUserJoined: (_, __, ___) {},
+      onUserOffline: (_, __, ___) {},
+      onTokenPrivilegeWillExpire: (_, __) {},
+      onRejoinChannelSuccess: (_, __) {},
+      onLeaveChannel: (_, __) {},
+      onError: (_, __) {},
+    );
+  }
 }
 
 const int _waiting = 0;
@@ -107,26 +118,19 @@ class AgoraService {
         h.onError(code, str);
       },
     );
+  }
 
-    Future<void> ready() async {
-      assert(status == 1);
-      engine.registerEventHandler(_handler!);
-      await engine.enableAudio();
-      await engine.enableVideo();
-      state = 2;
-    }
-
-    Future<void> joinChannel(
-      String token,
-      String channel,
-    ) async {
-      assert(status == 2);
-      await engine.joinChannel(
-          token: token,
-          channelId: channel,
-          uid: 0,
-          options: const ChannelMediaOptions());
-    }
+  Future<void> joinChannel(
+    String token,
+    String channel,
+  ) async {
+    assert(status == 2);
+    await engine.joinChannel(
+        token:
+            "007eJxTYOhJFNjzau675gfH7Pfcy8hn3nA+W8Z158FZN1czarn/CDmvwGCYbJFoapScYphinGpiamxkaWBqZGSZbJlmlGJhmmSeeCJfJ70hkJGhvu4sEyMDBIL4XAwZGcXJGYl5eak5DAwAu9Ejrw==",
+        channelId: "hhschannel",
+        uid: 0,
+        options: const ChannelMediaOptions());
   }
 
   Future<void> leaveChannel() async {
@@ -140,5 +144,13 @@ class AgoraService {
 
     await engine.leaveChannel();
     await engine.release();
+  }
+
+  Future<void> ready() async {
+    assert(status == 1);
+    engine.registerEventHandler(_handler!);
+    await engine.enableAudio();
+    await engine.enableVideo();
+    state = 2;
   }
 }

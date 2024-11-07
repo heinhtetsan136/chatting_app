@@ -4,6 +4,7 @@ import 'package:blca_project_app/repo/agoraService/agoraService.dart';
 import 'package:blca_project_app/repo/authService.dart';
 import 'package:blca_project_app/repo/chatroom_service.dart';
 import 'package:blca_project_app/repo/firestoreService.dart';
+import 'package:blca_project_app/repo/ui_video_call_Service.dart/ui_video_call_Service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_app_check/firebase_app_check.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -44,8 +45,10 @@ Future<void> setUp() async {
   Injection.registerLazySingleton(() => FirebaseStorage.instance);
   Injection.registerSingleton(AuthService(),
       dispose: (instance) => instance.dispose());
-  Injection.registerLazySingleton(() => AgoraService());
+
   Injection.registerLazySingleton(() => FireStoreService());
   Injection.registerLazySingleton(() => ChatRoomService());
   Injection.registerLazySingleton(() => MessagingService());
+  Injection.registerLazySingleton(() => VideoCallService());
+  Injection.registerLazySingleton(() => AgoraService());
 }

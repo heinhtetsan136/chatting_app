@@ -10,6 +10,8 @@ import 'package:blca_project_app/controller/login/login_bloc.dart';
 import 'package:blca_project_app/controller/profile_setting/profile_setting_bloc.dart';
 import 'package:blca_project_app/controller/register/register_state.dart';
 import 'package:blca_project_app/controller/register/resgister_bloc.dart';
+import 'package:blca_project_app/controller/videoCall/videoCall_State.dart';
+import 'package:blca_project_app/controller/videoCall/videoCall_bloc.dart';
 import 'package:blca_project_app/injection.dart';
 import 'package:blca_project_app/repo/authService.dart';
 import 'package:blca_project_app/repo/chatRoom_model.dart';
@@ -48,6 +50,7 @@ Route? router(RouteSettings settings) {
           incomingRoute,
           MultiBlocProvider(
               providers: [
+                BlocProvider(create: (_) => VideocallBloc(VideoCallInitial())),
                 BlocProvider(
                     create: (_) =>
                         ChattingBloc(ChattingInitialState(const []), values)),
@@ -71,6 +74,8 @@ Route? router(RouteSettings settings) {
       return _protectedRoute(
           incomingRoute,
           MultiBlocProvider(providers: [
+            BlocProvider(create: (_) => VideocallBloc(VideoCallInitial())),
+            BlocProvider(create: (_) => VideocallBloc(VideoCallInitial())),
             BlocProvider(create: (_) => ChatRoomListBloc()),
             BlocProvider(
                 create: (_) =>

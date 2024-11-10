@@ -8,7 +8,7 @@ import 'package:blca_project_app/repo/user_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class FireStoreService {
+class ContactUserService {
   final AuthService _authService = Injection.get<AuthService>();
 
   final FirebaseFirestore db = Injection.get<FirebaseFirestore>();
@@ -29,7 +29,18 @@ class FireStoreService {
     }
   }
 
-  Future<Result> getUser() async {
+  Future<Result> getUser(String id) async {
+    return _try(() async {
+      final user = _authService.currentUser;
+
+      final doc = db.collection("users").doc(id);
+      final snapshot = await doc.get();
+      final ContactUser contactUser = ContactUser.fromJson(snapshot.data()!);
+      return Result(data: contactUser);
+    });
+  }
+
+  Future<Result> getListofUser() async {
     return _try(() async {
       final user = _authService.currentUser;
       if (user == null) {

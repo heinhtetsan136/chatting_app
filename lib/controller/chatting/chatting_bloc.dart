@@ -19,7 +19,7 @@ class ChattingBloc extends Bloc<ChattingEvent, ChattingState> {
   ValueNotifier<bool> text = ValueNotifier(false);
   final AuthService _authService = Injection.get<AuthService>();
   final ChatRoom chatRoom;
-  final FireStoreService _storeService = Injection.get<FireStoreService>();
+  final ContactUserService _storeService = Injection.get<ContactUserService>();
   final FirebaseStorage _firebaseStorage = Injection.get<FirebaseStorage>();
   final ImagePicker _imagePicker = ImagePicker();
   final FocusNode focusNode = FocusNode();

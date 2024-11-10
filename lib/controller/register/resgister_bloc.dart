@@ -16,7 +16,7 @@ class ResgisterBloc extends Bloc<RegisterBaseEvent, RegisterBaseState> {
   final FocusNode passwordFocusNode = FocusNode();
   final ValueNotifier<bool> passwordIsShow = ValueNotifier(true);
   final ValueNotifier<bool> comfirmpasswordIsShow = ValueNotifier(true);
-  final FireStoreService db = Injection.get<FireStoreService>();
+  final ContactUserService db = Injection.get<ContactUserService>();
   GlobalKey<FormState>? form = GlobalKey<FormState>();
   final _auth = Injection.get<AuthService>();
   ResgisterBloc(super.initialState) {

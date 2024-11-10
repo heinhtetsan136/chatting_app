@@ -10,6 +10,7 @@ import 'package:blca_project_app/controller/login/login_bloc.dart';
 import 'package:blca_project_app/controller/profile_setting/profile_setting_bloc.dart';
 import 'package:blca_project_app/controller/register/register_state.dart';
 import 'package:blca_project_app/controller/register/resgister_bloc.dart';
+import 'package:blca_project_app/controller/videoCall/db_controller/video_call_db_blco.dart';
 import 'package:blca_project_app/controller/videoCall/videoCall_State.dart';
 import 'package:blca_project_app/controller/videoCall/videoCall_bloc.dart';
 import 'package:blca_project_app/injection.dart';
@@ -50,7 +51,6 @@ Route? router(RouteSettings settings) {
           incomingRoute,
           MultiBlocProvider(
               providers: [
-                BlocProvider(create: (_) => VideocallBloc(VideoCallInitial())),
                 BlocProvider(
                     create: (_) =>
                         ChattingBloc(ChattingInitialState(const []), values)),
@@ -74,8 +74,6 @@ Route? router(RouteSettings settings) {
       return _protectedRoute(
           incomingRoute,
           MultiBlocProvider(providers: [
-            BlocProvider(create: (_) => VideocallBloc(VideoCallInitial())),
-            BlocProvider(create: (_) => VideocallBloc(VideoCallInitial())),
             BlocProvider(create: (_) => ChatRoomListBloc()),
             BlocProvider(
                 create: (_) =>
@@ -110,7 +108,13 @@ Route? router(RouteSettings settings) {
               child: const UpdateUserInfo()),
           settings);
     case RouteNames.call:
-      return _protectedRoute(incomingRoute, const Call(), settings);
+      final String channelId = settings.arguments as String;
+      return _protectedRoute(
+          incomingRoute,
+          BlocProvider(
+              create: (_) => AgoraVideocallBloc(VideoCallInitial(), channelId),
+              child: const Call()),
+          settings);
     case RouteNames.settingPage:
       return _protectedRoute(incomingRoute, const SettingPage(), settings);
     default:
@@ -133,7 +137,10 @@ Route? _protectedRoute(String path, Widget child, RouteSettings settings) {
             create: (_) => LoginBloc(),
             child: const LoginPage(),
           )
-        : child,
+        : BlocProvider(
+            child: child,
+            create: (_) => VideoCallDbBlco(),
+          ),
     settings,
   );
 }

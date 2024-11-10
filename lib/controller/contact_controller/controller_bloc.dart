@@ -10,7 +10,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ContactBloc extends Bloc<ContactBaseEvent, ContactBaseState> {
   final AuthService _auth = Injection.get<AuthService>();
-  final FireStoreService store = Injection.get<FireStoreService>();
+  final ContactUserService store = Injection.get<ContactUserService>();
 
   final List<ContactUser> posts = [];
 
@@ -52,7 +52,7 @@ class ContactBloc extends Bloc<ContactBaseEvent, ContactBaseState> {
     } else {
       emit(ContactSoftLoadingState(contact));
     }
-    final result = await store.getUser();
+    final result = await store.getListofUser();
     if (result.hasError) {
       emit(ContactFailedState(result.error!.message, contact));
     }
@@ -65,7 +65,7 @@ class ContactBloc extends Bloc<ContactBaseEvent, ContactBaseState> {
       emit(ContactLoadingState(state.posts));
     }
     final copied = state.posts.toList();
-    final result = await store.getUser();
+    final result = await store.getListofUser();
     if (result.hasError) {
       emit(ContactFailedState(result.error!.message, copied));
     }

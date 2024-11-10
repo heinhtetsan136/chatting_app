@@ -1,20 +1,24 @@
-abstract class VideoCallBaseState {
-  const VideoCallBaseState();
+abstract class VideoCallState {
+  const VideoCallState();
 }
 
-class VideoCallInitial extends VideoCallBaseState {
+class VideoCallInitial extends VideoCallState {
   VideoCallInitial();
 }
 
-class VideocallSucessState extends VideoCallBaseState {
+class VideocallSucessState extends VideoCallState {
   VideocallSucessState();
 }
 
-class VideocallLoadingState extends VideoCallBaseState {
+class VideocallLoadingState extends VideoCallState {
   VideocallLoadingState();
 }
 
-class VideoCallErrorState extends VideoCallBaseState {
+class VideoCallEndState extends VideoCallState {
+  VideoCallEndState();
+}
+
+class VideoCallErrorState extends VideoCallState {
   final String message;
   VideoCallErrorState(this.message);
 }

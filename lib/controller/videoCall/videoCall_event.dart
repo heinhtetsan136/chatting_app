@@ -7,14 +7,6 @@ class VideocallJoinEvent extends VideocallEvent {
   const VideocallJoinEvent(this.receiverId);
 }
 
-class VideocallRejectedEvent extends VideocallEvent {
-  const VideocallRejectedEvent();
-}
-
 class VideocallEndEvent extends VideocallEvent {
   const VideocallEndEvent();
-}
-
-class VideocallAcceptedEvent extends VideocallEvent {
-  const VideocallAcceptedEvent();
 }

@@ -25,7 +25,7 @@ class SendDataBloc extends Bloc<SendDataBaseEvent, SendDataBaseState> {
   final FirebaseStorage _firebaseStorage = Injection.get<FirebaseStorage>();
   final MessagingService chattingService = Injection.get<MessagingService>();
   final AuthService _authService = Injection.get<AuthService>();
-  final FireStoreService _storeService = Injection.get<FireStoreService>();
+  final ContactUserService _storeService = Injection.get<ContactUserService>();
   SendDataBloc(this.chatRoom)
       : super(
           const SendDataInitialState(),

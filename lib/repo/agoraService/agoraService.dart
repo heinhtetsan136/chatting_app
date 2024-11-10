@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:blca_project_app/logger.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -51,13 +53,25 @@ class AgoraHandler {
   }
 }
 
+class AgoraLiveConnection {
+  final RtcConnection connection;
+  final int remoteId; //host user id
+
+  const AgoraLiveConnection({
+    required this.connection,
+    required this.remoteId,
+  });
+}
+
 const int _waiting = 0;
 
 class AgoraService {
+  StreamController<AgoraLiveConnection> stream = StreamController.broadcast();
+  Stream<AgoraLiveConnection> get remotId => stream.stream;
   final RtcEngine engine;
   AgoraService() : engine = createAgoraRtcEngine();
-  final String appId = "1c8a52cd1d3e4532905229c9f2d85b7a";
-
+  // final String appId = "1c8a52cd1d3e4532905229c9f2d85b7a";
+  final String appId = "a94c9671de4f4eceb149d0f696b9498e";
 //       //L
   int state = _waiting;
   get status => state;
@@ -65,18 +79,24 @@ class AgoraService {
   Future<void> init() async {
     assert(status == 0);
     await requestPermission();
-    await engine.initialize(RtcEngineContext(appId: appId));
+    await engine.initialize(
+      RtcEngineContext(
+          appId: appId,
+          channelProfile: ChannelProfileType.channelProfileCommunication),
+    );
     state = 1;
   }
 
+  AgoraLiveConnection? connection;
   RtcEngineEventHandler? _handler;
   set handler(AgoraHandler h) {
     _handler = RtcEngineEventHandler(
       //Live Start
       onUserJoined: (conn, remoteUid, _) {
         logger.i("[stream:onUserJoined] [conn] $conn\n[remoteUid] $remoteUid");
-        // connection = AgoraLiveConnection(connection: conn, remoteId: remoteUid);
+        connection = AgoraLiveConnection(connection: conn, remoteId: remoteUid);
         // onLive.sink.add(connection);
+        stream.sink.add(connection!);
         h.onUserJoined(conn, remoteUid, _);
       },
       //Live Stop
@@ -120,17 +140,22 @@ class AgoraService {
     );
   }
 
+  final String tokens =
+      "007eJxTYOhJFNjzau675gfH7Pfcy8hn3nA+W8Z158FZN1czarn/CDmvwGCYbJFoapScYphinGpiamxkaWBqZGSZbJlmlGJhmmSeeCJfJ70hkJGhvu4sEyMDBIL4XAwZGcXJGYl5eak5DAwAu9Ejrw==";
+
   Future<void> joinChannel(
     String token,
     String channel,
   ) async {
     assert(status == 2);
     await engine.joinChannel(
-        token:
-            "007eJxTYOhJFNjzau675gfH7Pfcy8hn3nA+W8Z158FZN1czarn/CDmvwGCYbJFoapScYphinGpiamxkaWBqZGSZbJlmlGJhmmSeeCJfJ70hkJGhvu4sEyMDBIL4XAwZGcXJGYl5eak5DAwAu9Ejrw==",
-        channelId: "hhschannel",
+        token: "",
+        // token:
+        //     "007eJxTYOhJFNjzau675gfH7Pfcy8hn3nA+W8Z158FZN1czarn/CDmvwGCYbJFoapScYphinGpiamxkaWBqZGSZbJlmlGJhmmSeeCJfJ70hkJGhvu4sEyMDBIL4XAwZGcXJGYl5eak5DAwAu9Ejrw==",
+        // channelId: "hhschannel",
+        channelId: channel,
         uid: 0,
-        options: const ChannelMediaOptions());
+        options: ChannelMediaOptions(token: tokens));
   }
 
   Future<void> leaveChannel() async {
@@ -149,8 +174,11 @@ class AgoraService {
   Future<void> ready() async {
     assert(status == 1);
     engine.registerEventHandler(_handler!);
+
     await engine.enableAudio();
     await engine.enableVideo();
+    await engine.startPreview();
+
     state = 2;
   }
 }

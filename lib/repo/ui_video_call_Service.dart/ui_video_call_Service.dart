@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:blca_project_app/controller/videoCall/videoCall_bloc.dart';
 import 'package:blca_project_app/injection.dart';
 import 'package:blca_project_app/model/error.dart';
 import 'package:blca_project_app/model/result.dart';
@@ -14,6 +13,7 @@ class VideoCallService {
   Stream get videoCallStream => _videoCallStreamController.stream;
   final StreamController _videoCallStreamController =
       StreamController<VideoCallModel>.broadcast();
+  StreamSubscription? _videoCallStreamSubscription;
   Future<Result> _try(Future<Result> Function() callback) async {
     try {
       final result = await callback();
@@ -44,12 +44,12 @@ class VideoCallService {
     });
   }
 
-  Future<Result> updateCalltate(String id, String c, callState state) async {
+  Future<Result> updateCalltate(String id, String state) async {
     return _try(() async {
       final result = await _db
           .collection("VideoCall")
           .doc(id)
-          .update({"state": state.name});
+          .update({"callState": state});
       return const Result(data: ());
     });
   }
@@ -83,7 +83,9 @@ class VideoCallService {
   void contactListener(void Function(VideoCallModel) messages) async {
     String userId = _authService.currentUser!.uid;
     final doc = _db.collection("VideoCall");
-    final result = doc..where("'receiverId'", isEqualTo: userId);
+    final result = doc
+        .where("'receiverId'", isEqualTo: userId)
+        .where("callState", isEqualTo: "calling");
 
     videoStream = result.snapshots().listen((event) {
       print("event is ${event.docs}");

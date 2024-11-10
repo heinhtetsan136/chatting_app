@@ -4,9 +4,9 @@ import 'package:blca_project_app/controller/chatting/chatting_state.dart';
 import 'package:blca_project_app/controller/chatting/send_data/send_data_bloc.dart';
 import 'package:blca_project_app/controller/chatting/send_data/send_data_event.dart';
 import 'package:blca_project_app/controller/chatting/send_data/send_data_state.dart';
-import 'package:blca_project_app/controller/videoCall/videoCall_Event.dart';
-import 'package:blca_project_app/controller/videoCall/videoCall_State.dart';
-import 'package:blca_project_app/controller/videoCall/videoCall_bloc.dart';
+import 'package:blca_project_app/controller/videoCall/db_controller/video_call_db_blco.dart';
+import 'package:blca_project_app/controller/videoCall/db_controller/video_call_db_event.dart';
+import 'package:blca_project_app/controller/videoCall/db_controller/video_call_db_state.dart';
 import 'package:blca_project_app/injection.dart';
 import 'package:blca_project_app/logger.dart';
 import 'package:blca_project_app/repo/authService.dart';
@@ -27,7 +27,7 @@ class MessagingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     bool isEdit = false;
-    final videocontroller = context.read<VideocallBloc>();
+
     final sendData = context.read<SendDataBloc>();
 
     List<String> months = [
@@ -50,6 +50,8 @@ class MessagingScreen extends StatelessWidget {
     bool myMessage = false;
 
     final messagebloc = context.read<ChattingBloc>();
+    final videobloc = context.read<VideoCallDbBlco>();
+
     return Scaffold(
       body: Padding(
         padding:
@@ -105,12 +107,12 @@ class MessagingScreen extends StatelessWidget {
                       children: [
                         IconButton(
                             onPressed: () {
-                              videocontroller.add(VideocallJoinEvent(
+                              videobloc.add(VideoCallDbCallEvent(
                                   user[0] == auth.currentUser!.uid
                                       ? user[1]
                                       : user[0]));
                             },
-                            icon: const Icon(Icons.call)),
+                            icon: const Icon(Icons.call))
                       ],
                     ),
                   ],
@@ -285,26 +287,54 @@ class MessagingScreen extends StatelessWidget {
                 ),
               ],
             ),
-            BlocConsumer<VideocallBloc, VideoCallBaseState>(
-                builder: (_, state) {
-              if (state is VideocallLoadingState) {
-                return SizedBox(
-                  width: context.width,
-                  height: context.height,
-                  child: const Center(
-                    child: CircularProgressIndicator(),
-                  ),
-                );
-              }
-              return const SizedBox();
-            }, listener: (_, state) {
-              if (state is VideoCallErrorState) {
-                StarlightUtils.snackbar(SnackBar(content: Text(state.message)));
-              }
-              if (state is VideocallSucessState) {
-                StarlightUtils.pushNamed(RouteNames.call);
-              }
-            }),
+            BlocConsumer<VideoCallDbBlco, VideoCallDbState>(
+              builder: (_, state) {
+                if (state is VideoCallDbLoadingState) {
+                  return Container(
+                    height: context.height,
+                    width: context.width,
+                    decoration: const BoxDecoration(
+                      color: Color.fromRGBO(255, 255, 255, 1),
+                    ),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(state.caller.displayName ?? state.caller.email),
+                          const CircularProgressIndicator(),
+                          const Text("Calling..."),
+                          IconButton(
+                              onPressed: () {
+                                videobloc.add(
+                                    VideoCallDbDeclineEvent(state.caller.uid));
+                              },
+                              icon: const Icon(Icons.call_end))
+                        ],
+                      ),
+                    ),
+                  );
+                }
+                return const SizedBox();
+              },
+              listener: (_, state) {
+                logger.i("calldb state $state");
+                if (state is VideoCallDbSucessState) {
+                  final model = state.model;
+                  StarlightUtils.pushNamed(RouteNames.call,
+                      arguments: model.id);
+                }
+                if (state is VideoCallDbLeaveState) {
+                  StarlightUtils.snackbar(const SnackBar(
+                    content: Text("Call Leave"),
+                  ));
+                }
+                if (state is VideoCalDbErrorState) {
+                  StarlightUtils.snackbar(SnackBar(
+                    content: Text(state.message),
+                  ));
+                }
+              },
+            ),
           ],
         ),
       ),

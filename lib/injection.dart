@@ -46,7 +46,7 @@ Future<void> setUp() async {
   Injection.registerSingleton(AuthService(),
       dispose: (instance) => instance.dispose());
 
-  Injection.registerLazySingleton(() => FireStoreService());
+  Injection.registerLazySingleton(() => ContactUserService());
   Injection.registerLazySingleton(() => ChatRoomService());
   Injection.registerLazySingleton(() => MessagingService());
   Injection.registerLazySingleton(() => VideoCallService());

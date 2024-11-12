@@ -56,7 +56,10 @@ class Call extends StatelessWidget {
                           )),
                         );
                       }
-
+                      print(
+                          "[stream:onUserJoined] uid is ${snapshot.data?.remoteId}");
+                      print(
+                          "[stream:onUserJoined] louid is ${snapshot.data?.connection.localUid}");
                       return remoteView(
                         conn: snapshot.data!,
                       );
@@ -120,6 +123,7 @@ class remoteView extends StatelessWidget {
   Widget build(BuildContext context) {
     final agoraVideo = context.read<AgoraVideocallBloc>();
     return AgoraVideoView(
+        key: UniqueKey(),
         controller: VideoViewController.remote(
             canvas: VideoCanvas(uid: conn.remoteId),
             rtcEngine: agoraVideo.engine,

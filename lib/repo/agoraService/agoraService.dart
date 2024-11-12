@@ -100,7 +100,7 @@ class AgoraService {
     _handler = RtcEngineEventHandler(
       //Live Start
       onUserJoined: (conn, remoteUid, _) {
-        logger.i("[stream:onUserJoined] [conn] $conn\n[remoteUid] $remoteUid");
+        logger.i("[stream:onUserJoined] [conn] $conn  [remoteUid] $remoteUid");
         connection = AgoraLiveConnection(connection: conn, remoteId: remoteUid);
         // onLive.sink.add(connection);
         stream.sink.add(connection!);
@@ -182,6 +182,9 @@ class AgoraService {
     engine.unregisterEventHandler(_handler!);
     await engine.leaveChannel();
     await engine.release();
+
+    connection = null;
+
     AgoraService._instance = null;
     state = 0;
   }

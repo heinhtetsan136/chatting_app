@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:agora_rtc_engine/agora_rtc_engine.dart';
 import 'package:blca_project_app/controller/videoCall/videoCall_Event.dart';
 import 'package:blca_project_app/controller/videoCall/videoCall_State.dart';
 import 'package:blca_project_app/injection.dart';
@@ -24,10 +25,11 @@ class AgoraVideocallBloc extends Bloc<VideocallEvent, VideoCallState> {
 
   final AuthService _authService = Injection<AuthService>();
   final FirebaseFirestore _firestore = Injection<FirebaseFirestore>();
-  final VideoCallService _videoCallService = Injection<VideoCallService>();
   final AgoraService _agoraService = Injection<AgoraService>();
-  Stream get remoteId => _agoraService.remotId;
+  Stream<AgoraLiveConnection> get connectStream => _agoraService.connectStream;
+  Stream get remoteId => _agoraService.connectStream;
   StreamSubscription? subscription;
+  RtcEngine get engine => _agoraService.engine;
   late AgoraHandler handler;
   AgoraVideocallBloc(super.initialState, this.channel) {
     logger.i("bloc init ${channel.id}");

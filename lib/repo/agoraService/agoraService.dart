@@ -67,9 +67,15 @@ const int _waiting = 0;
 
 class AgoraService {
   StreamController<AgoraLiveConnection> stream = StreamController.broadcast();
-  Stream<AgoraLiveConnection> get remotId => stream.stream;
+  Stream<AgoraLiveConnection> get connectStream => stream.stream;
   final RtcEngine engine;
-  AgoraService() : engine = createAgoraRtcEngine();
+  static AgoraService? _instance;
+  AgoraService._() : engine = createAgoraRtcEngine();
+  static Future<AgoraService> instance() async {
+    _instance ??= AgoraService._();
+    return _instance!;
+  }
+
   // final String appId = "1c8a52cd1d3e4532905229c9f2d85b7a";
   final String appId = "a94c9671de4f4eceb149d0f696b9498e";
 //       //L
@@ -77,6 +83,7 @@ class AgoraService {
   get status => state;
 
   Future<void> init() async {
+    logger.i("Agora init");
     assert(status == 0);
     await requestPermission();
     await engine.initialize(
@@ -148,6 +155,8 @@ class AgoraService {
     String channel,
   ) async {
     assert(status == 2);
+    logger.i("Agora Join");
+
     await engine.joinChannel(
         token: "",
         // token:
@@ -155,7 +164,7 @@ class AgoraService {
         // channelId: "hhschannel",
         channelId: channel,
         uid: 0,
-        options: ChannelMediaOptions(token: tokens));
+        options: const ChannelMediaOptions(token: ""));
   }
 
   Future<void> leaveChannel() async {
@@ -168,20 +177,22 @@ class AgoraService {
     logger.i("bloc init $state");
     logger.i("status $status");
     assert(status > 0);
-
+    await engine.stopPreview();
     logger.i("bloc init new $state");
     engine.unregisterEventHandler(_handler!);
     await engine.leaveChannel();
     await engine.release();
+    AgoraService._instance = null;
     state = 0;
   }
 
   Future<void> ready() async {
     assert(status == 1);
     engine.registerEventHandler(_handler!);
+    logger.i("Agora ready");
 
-    await engine.enableAudio();
     await engine.enableVideo();
+    await engine.enableLocalVideo(true);
     await engine.startPreview();
 
     state = 2;

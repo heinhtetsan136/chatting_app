@@ -50,5 +50,6 @@ Future<void> setUp() async {
   Injection.registerLazySingleton(() => ChatRoomService());
   Injection.registerLazySingleton(() => MessagingService());
   Injection.registerLazySingleton(() => VideoCallService());
-  Injection.registerLazySingleton(() => AgoraService());
+  final agoraService = await AgoraService.instance();
+  Injection.registerLazySingleton(() => agoraService);
 }

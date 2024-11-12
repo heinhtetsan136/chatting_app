@@ -16,6 +16,7 @@ import 'package:blca_project_app/view/contact_screen.dart';
 import 'package:blca_project_app/view/setting/widget/network_profile.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:starlight_utils/starlight_utils.dart';
@@ -289,7 +290,8 @@ class MessagingScreen extends StatelessWidget {
             ),
             BlocConsumer<VideoCallDbBlco, VideoCallDbState>(
               builder: (_, state) {
-                if (state is VideoCallDbLoadingState) {
+                if (state is VideoCallDbLoadingState ||
+                    state is VideoCallWaitingState) {
                   return Container(
                     height: context.height,
                     width: context.width,
@@ -300,15 +302,27 @@ class MessagingScreen extends StatelessWidget {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(state.caller.displayName ?? state.caller.email),
+                          NetworkProfile(
+                              profileUrl: state.caller!.photoURL ?? "",
+                              radius: 30,
+                              onFail: const CupertinoActivityIndicator()),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 20.0),
+                            child: Text(state.caller!.displayName ??
+                                state.caller!.email),
+                          ),
                           const CircularProgressIndicator(),
-                          const Text("Calling..."),
-                          IconButton(
-                              onPressed: () {
-                                videobloc.add(
-                                    VideoCallDbDeclineEvent(state.caller.uid));
-                              },
-                              icon: const Icon(Icons.call_end))
+                          state is VideoCallWaitingState
+                              ? const Text("Waiting...")
+                              : const Text("Calling..."),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10.0),
+                            child: IconButton(
+                                onPressed: () {
+                                  videobloc.add(const VideoCallDbLeaveEvent());
+                                },
+                                icon: const Icon(Icons.call_end)),
+                          )
                         ],
                       ),
                     ),
@@ -320,12 +334,16 @@ class MessagingScreen extends StatelessWidget {
                 logger.i("calldb state $state");
                 if (state is VideoCallDbSucessState) {
                   final model = state.model;
-                  StarlightUtils.pushNamed(RouteNames.call,
-                      arguments: model.id);
+                  StarlightUtils.pushNamed(RouteNames.call, arguments: model);
                 }
                 if (state is VideoCallDbLeaveState) {
                   StarlightUtils.snackbar(const SnackBar(
                     content: Text("Call Leave"),
+                  ));
+                }
+                if (state is VideoCallDbRejectState) {
+                  StarlightUtils.snackbar(const SnackBar(
+                    content: Text("Call rejected by other"),
                   ));
                 }
                 if (state is VideoCalDbErrorState) {

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:blca_project_app/injection.dart';
+import 'package:blca_project_app/logger.dart';
 import 'package:blca_project_app/model/error.dart';
 import 'package:blca_project_app/model/result.dart';
 import 'package:blca_project_app/repo/authService.dart';
@@ -62,6 +63,13 @@ class VideoCallService {
     });
   }
 
+  Stream videoCall(String channelId) {
+    String userId = _authService.currentUser!.uid;
+    final doc = _db.collection("VideoCall");
+    final result = doc.where("id", isEqualTo: channelId);
+    return result.snapshots();
+  }
+
   Stream videoRooms() {
     String userId = _authService.currentUser!.uid;
     final doc = _db.collection("VideoCall");
@@ -80,19 +88,23 @@ class VideoCallService {
   }
 
   StreamSubscription? videoStream;
+
   void contactListener(void Function(VideoCallModel) messages) async {
+    logger.i("videocalldb");
     String userId = _authService.currentUser!.uid;
     final doc = _db.collection("VideoCall");
     final result = doc
-        .where("'receiverId'", isEqualTo: userId)
+        .where("receiverId", isEqualTo: userId)
         .where("callState", isEqualTo: "calling");
 
     videoStream = result.snapshots().listen((event) {
-      print("event is ${event.docs}");
       if (event.docs.isNotEmpty) {
         final message = VideoCallModel.fromJson(event.docs.first.data());
-        print("stream User ${message.id}");
-        messages(message);
+        if (message.callState == "calling") {
+          print("vvvvvstream User ${message.id}");
+          messages(message);
+        }
+        print("vvvvvstream User ${message.id}");
       }
     });
   }

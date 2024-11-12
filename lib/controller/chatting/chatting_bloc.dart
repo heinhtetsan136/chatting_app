@@ -143,8 +143,8 @@ class ChattingBloc extends Bloc<ChattingEvent, ChattingState> {
   }
 
   @override
-  Future<void> close() {
-    chattingService.close(chatRoom);
+  Future<void> close() async {
+    await chattingService.close(chatRoom);
     logger.i("chatting close bloc");
 
     textEditingController.dispose();

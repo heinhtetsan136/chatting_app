@@ -4,6 +4,7 @@ import 'package:blca_project_app/controller/home_controller/home_controller_stat
 import 'package:blca_project_app/controller/videoCall/db_controller/video_call_db_blco.dart';
 import 'package:blca_project_app/controller/videoCall/db_controller/video_call_db_event.dart';
 import 'package:blca_project_app/controller/videoCall/db_controller/video_call_db_state.dart';
+import 'package:blca_project_app/logger.dart';
 import 'package:blca_project_app/route/route.dart';
 import 'package:blca_project_app/view/chat_room_screen.dart';
 import 'package:blca_project_app/view/contact_screen.dart';
@@ -20,6 +21,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final homePageBloc = context.read<HomePageBloc>();
+    final videCalldb = context.read<VideoCallDbBlco>();
     return BlocListener<HomePageBloc, HomeBlocBaseState>(
       listener: (_, state) {
         print("state is $state");
@@ -28,22 +30,25 @@ class HomeScreen extends StatelessWidget {
         }
       },
       child: BlocListener<VideoCallDbBlco, VideoCallDbState>(
+        listenWhen: (p, c) => p.model?.id != c.model?.id,
         listener: (_, state) {
+          logger.i("state of vc is $state");
           if (state is VideoCallDbIncomingState) {
             final result = StarlightUtils.dialog(AlertDialog(
                 title: const Text("Incoming Call"),
-                content: Text(state.caller.email ?? state.caller.uid),
+                content: Text(state.caller!.email ?? state.caller!.uid),
                 actions: [
                   ElevatedButton(
                       onPressed: () {
-                        context
-                            .read<VideoCallDbBlco>()
-                            .add(VideoCallDbAcceptedEvent(""));
                         StarlightUtils.pop(result: true);
+                        videCalldb.add(VideoCallDbAcceptedEvent());
+                        StarlightUtils.pushNamed(RouteNames.call,
+                            arguments: state.model);
                       },
                       child: const Text("Accept")),
                   ElevatedButton(
                       onPressed: () {
+                        videCalldb.add(VideoCallDbDeclineEvent(state.model.id));
                         StarlightUtils.pop(result: false);
                       },
                       child: const Text("Decline")),

@@ -10,12 +10,12 @@ import 'package:blca_project_app/controller/login/login_bloc.dart';
 import 'package:blca_project_app/controller/profile_setting/profile_setting_bloc.dart';
 import 'package:blca_project_app/controller/register/register_state.dart';
 import 'package:blca_project_app/controller/register/resgister_bloc.dart';
-import 'package:blca_project_app/controller/videoCall/db_controller/video_call_db_blco.dart';
 import 'package:blca_project_app/controller/videoCall/videoCall_State.dart';
 import 'package:blca_project_app/controller/videoCall/videoCall_bloc.dart';
 import 'package:blca_project_app/injection.dart';
 import 'package:blca_project_app/repo/authService.dart';
 import 'package:blca_project_app/repo/chatRoom_model.dart';
+import 'package:blca_project_app/repo/ui_video_call_Service.dart/video_call_model.dart';
 import 'package:blca_project_app/route/route.dart';
 import 'package:blca_project_app/view/auth/login_page.dart';
 import 'package:blca_project_app/view/auth/sign_up_page.dart';
@@ -108,7 +108,7 @@ Route? router(RouteSettings settings) {
               child: const UpdateUserInfo()),
           settings);
     case RouteNames.call:
-      final String channelId = settings.arguments as String;
+      final channelId = settings.arguments as VideoCallModel;
       return _protectedRoute(
           incomingRoute,
           BlocProvider(
@@ -137,10 +137,7 @@ Route? _protectedRoute(String path, Widget child, RouteSettings settings) {
             create: (_) => LoginBloc(),
             child: const LoginPage(),
           )
-        : BlocProvider(
-            child: child,
-            create: (_) => VideoCallDbBlco(),
-          ),
+        : child,
     settings,
   );
 }

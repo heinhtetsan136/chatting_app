@@ -1,12 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:equatable/equatable.dart';
 
-class VideoCallModel {
+class VideoCallModel extends Equatable {
+  @override
+  List<Object> get props => [id, callerId, receiverId, callState, timeStamp];
   final String id;
   final String callerId;
   final String receiverId;
   final String callState;
   final Timestamp timeStamp;
-  VideoCallModel(
+  const VideoCallModel(
       {required this.callerId,
       required this.callState,
       required this.id,

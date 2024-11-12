@@ -10,8 +10,7 @@ class VideoCallDbCallEvent extends VideoCallDbEvent {
 }
 
 class VideoCallDbLeaveEvent extends VideoCallDbEvent {
-  final String id;
-  const VideoCallDbLeaveEvent(this.id);
+  const VideoCallDbLeaveEvent();
 }
 
 class VideoCallDbIncomingEvent extends VideoCallDbEvent {
@@ -20,8 +19,17 @@ class VideoCallDbIncomingEvent extends VideoCallDbEvent {
 }
 
 class VideoCallDbAcceptedEvent extends VideoCallDbEvent {
-  final String id;
-  VideoCallDbAcceptedEvent(this.id);
+  VideoCallDbAcceptedEvent();
+}
+
+class VideoCallDbUserJoinedEvent extends VideoCallDbEvent {
+  final VideoCallModel videoCallModel;
+  VideoCallDbUserJoinedEvent(this.videoCallModel);
+}
+
+class VideoCallDbUserRejectedEvent extends VideoCallDbEvent {
+  final VideoCallModel videoCallModel;
+  VideoCallDbUserRejectedEvent(this.videoCallModel);
 }
 
 class VideoCallDbDeclineEvent extends VideoCallDbEvent {

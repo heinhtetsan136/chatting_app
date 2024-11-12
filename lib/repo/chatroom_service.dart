@@ -34,11 +34,8 @@ class ChatRoomService {
           .where("id", isEqualTo: chatRoomId)
           .get();
       final chatroom = ChatRoom.fromJson(data.docs.first.data());
-      if (chatroom.finalMessage.isNotEmpty != true) {
-        return const Result(data: false);
-      }
 
-      return const Result(data: true);
+      return Result(data: chatroom);
     });
   }
 

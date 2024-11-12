@@ -8,7 +8,6 @@ import 'package:blca_project_app/repo/authService.dart';
 import 'package:blca_project_app/repo/firestoreService.dart';
 import 'package:blca_project_app/repo/ui_video_call_Service.dart/ui_video_call_Service.dart';
 import 'package:blca_project_app/repo/ui_video_call_Service.dart/video_call_model.dart';
-import 'package:blca_project_app/repo/user_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -21,7 +20,6 @@ class VideoCall {
   VideoCall({required this.model, required this.callState});
 }
 
-List<VideoCallModel> videoCallList = [];
 VideoCallModel? model;
 
 class VideoCallDbBlco extends Bloc<VideoCallDbEvent, VideoCallDbState> {
@@ -29,8 +27,16 @@ class VideoCallDbBlco extends Bloc<VideoCallDbEvent, VideoCallDbState> {
   final VideoCallService _videoCallService = Injection<VideoCallService>();
   final FirebaseFirestore _db = Injection<FirebaseFirestore>();
   final AuthService _authService = Injection<AuthService>();
-  late final VideoCall videoCall;
-  VideoCallDbBlco() : super(VideoCallDbInitialState()) {
+  VideoCallModel? _videoCall;
+  StreamSubscription? subscription;
+  List<VideoCallModel> videoCallList = [];
+  set videoCallModel(VideoCallModel? model) {
+    _videoCall = model;
+  }
+
+  Timer? _waitingtimer;
+  final Duration _duration = const Duration(seconds: 30);
+  VideoCallDbBlco() : super(const VideoCallDbInitialState()) {
     _videoCallService.contactListener(contactListener);
     on<VideoCallDbCallEvent>((event, emit) async {
       logger.i("call event ${event.receiverId}");
@@ -43,9 +49,7 @@ class VideoCallDbBlco extends Bloc<VideoCallDbEvent, VideoCallDbState> {
         emit(VideoCalDbErrorState(otheruser.error!.message.toString()));
         return;
       }
-      emit(VideoCallDbLoadingState(ContactUser.fromJson(
-        otheruser.data,
-      )));
+      emit(VideoCallDbLoadingState(otheruser.data));
       String callerId = _authService.currentUser!.uid;
       final result = await _videoCallService.createCall(
           VideoCallModelParams.toCreate(
@@ -53,38 +57,38 @@ class VideoCallDbBlco extends Bloc<VideoCallDbEvent, VideoCallDbState> {
               receiverId: event.receiverId,
               callState: callState.calling.name,
               timeStamp: Timestamp.now()));
-
+      final VideoCallModel model = VideoCallModel.fromJson(result.data!);
+      videoCallModel = model;
       if (result.hasError) {
         emit(VideoCalDbErrorState(result.error!.message.toString()));
         return;
       }
-      final VideoCallModel model = VideoCallModel.fromJson(result.data!);
-      videoCallList.add(model);
-      await Future.delayed(const Duration(seconds: 30), () async {});
-      final check = await _db.collection("VideoCall").doc(model.id).get();
-      if (check.data() == null) {
-        emit(VideoCalDbErrorState("Time Out"));
-        return;
-      }
-      final VideoCallModel videocallmodel =
-          VideoCallModel.fromJson(check.data()!);
-      if (videocallmodel.callState != callState.accepted.name) {
-        add(VideoCallDbLeaveEvent(videocallmodel.id));
-
-        return;
-      }
-      emit(VideoCallDbSucessState(model));
+      logger.i(
+          "call event already event ${model.receiverId} ${model.id} ${model.callState}");
+      emit(VideoCallWaitingState(otheruser.data));
+      _waitingtimer?.cancel();
+      _waitingtimer = Timer(_duration, () {
+        add(const VideoCallDbLeaveEvent());
+      });
+      _listenToVideoCallStream(model.id, emit);
+    });
+    on<VideoCallDbUserJoinedEvent>((event, emit) async {
+      emit(VideoCallDbSucessState(event.videoCallModel));
     });
     on<VideoCallDbLeaveEvent>((event, emit) async {
+      if (_videoCall == null) {
+        return;
+      }
+      logger.i("$videoCallList");
       String callerId = _authService.currentUser!.uid;
       final result = await _videoCallService.updateCalltate(
-          event.id, callState.callEnded.name);
+          _videoCall!.id, callState.callEnded.name);
       if (result.hasError) {
         emit(VideoCalDbErrorState(result.error!.message.toString()));
         return;
       }
-      videoCallList.removeWhere((element) => element.id == event.id);
-      emit(VideoCallDbLeaveState());
+      _videoCall = null;
+      emit(const VideoCallDbLeaveState());
     });
     on<VideoCallDbDeclineEvent>((event, emit) async {
       String callerId = _authService.currentUser!.uid;
@@ -94,19 +98,24 @@ class VideoCallDbBlco extends Bloc<VideoCallDbEvent, VideoCallDbState> {
         emit(VideoCalDbErrorState(result.error!.message.toString()));
         return;
       }
-      emit(VideoCallDbLeaveState());
+      _videoCall = null;
+      emit(const VideoCallDbLeaveState());
     });
-
+    on<VideoCallDbUserRejectedEvent>((event, emit) {
+      logger.i("call event rejected State ${event.videoCallModel.id}");
+      _videoCall = null;
+      emit(const VideoCallDbRejectState());
+    });
     on<VideoCallDbAcceptedEvent>((event, emit) async {
       final result = await _videoCallService.updateCalltate(
-          event.id, callState.accepted.name);
+          _videoCall!.id, callState.accepted.name);
       if (result.hasError) {
         emit(VideoCalDbErrorState(result.error!.message.toString()));
         return;
       }
 
       emit(VideoCallDbSucessState(
-        videoCallList.firstWhere((element) => element.id == event.id),
+        _videoCall!,
       ));
     });
     on<VideoCallDbIncomingEvent>((event, emit) async {
@@ -118,17 +127,40 @@ class VideoCallDbBlco extends Bloc<VideoCallDbEvent, VideoCallDbState> {
         emit(VideoCalDbErrorState(result.error!.message.toString()));
         return;
       }
-      emit(VideoCallDbIncomingState(result.data));
+      videoCallModel = model;
+      emit(VideoCallDbIncomingState(result.data, event.videoCallModel));
       // emit(VideoCallDbIncomingState(model));
     });
   }
 
   void contactListener(VideoCallModel p1) {
-    if (videoCallList.isNotEmpty != true) {
-      videoCallList.add(p1);
+    logger.i("videocalldb it ${p1.callState}  $_videoCall");
+    logger.i("video call $_videoCall");
+    if (_videoCall == null) {
+      _videoCall = p1;
       add(VideoCallDbIncomingEvent(p1));
       return;
     }
     add(VideoCallDbDeclineEvent(p1.id));
+  }
+
+  void _listenToVideoCallStream(
+      String id, Emitter<VideoCallDbState> emit) async {
+    subscription =
+        _db.collection("VideoCall").doc(id).snapshots().listen((event) {
+      final VideoCallModel model = VideoCallModel.fromJson(event.data()!);
+      if (model.callState == callState.accepted.name) {
+        _waitingtimer?.cancel();
+        add(VideoCallDbUserJoinedEvent(model));
+        subscription?.cancel();
+        return;
+      }
+      if (model.callState == callState.rejected.name) {
+        _waitingtimer?.cancel();
+        subscription?.cancel();
+        add(VideoCallDbUserRejectedEvent(model));
+        return;
+      }
+    });
   }
 }

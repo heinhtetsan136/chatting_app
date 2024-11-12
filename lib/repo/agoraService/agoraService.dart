@@ -160,15 +160,20 @@ class AgoraService {
 
   Future<void> leaveChannel() async {
     assert(status == 2);
+
     await engine.leaveChannel();
   }
 
-  Future<void> dispose() async {
+  Future<void> close() async {
+    logger.i("bloc init $state");
+    logger.i("status $status");
     assert(status > 0);
-    state = 0;
 
+    logger.i("bloc init new $state");
+    engine.unregisterEventHandler(_handler!);
     await engine.leaveChannel();
     await engine.release();
+    state = 0;
   }
 
   Future<void> ready() async {

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:blca_project_app/controller/videoCall/videoCall_Event.dart';
 import 'package:blca_project_app/controller/videoCall/videoCall_State.dart';
 import 'package:blca_project_app/injection.dart';
@@ -6,19 +8,39 @@ import 'package:blca_project_app/repo/agoraService/agoraService.dart';
 import 'package:blca_project_app/repo/authService.dart';
 import 'package:blca_project_app/repo/ui_video_call_Service.dart/ui_video_call_Service.dart';
 import 'package:blca_project_app/repo/ui_video_call_Service.dart/video_call_model.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 enum callState { rejected, calling, callEnded, accepted }
 
+class CallModel {
+  String id;
+  Timestamp timeStamp;
+  CallModel({required this.id}) : timeStamp = Timestamp.now();
+}
+
 class AgoraVideocallBloc extends Bloc<VideocallEvent, VideoCallState> {
-  final String channel;
+  final VideoCallModel channel;
+
   final AuthService _authService = Injection<AuthService>();
+  final FirebaseFirestore _firestore = Injection<FirebaseFirestore>();
   final VideoCallService _videoCallService = Injection<VideoCallService>();
   final AgoraService _agoraService = Injection<AgoraService>();
   Stream get remoteId => _agoraService.remotId;
+  StreamSubscription? subscription;
   late AgoraHandler handler;
   AgoraVideocallBloc(super.initialState, this.channel) {
-    _videoCallService.contactListener(contactListener);
+    logger.i("bloc init ${channel.id}");
+    subscription = _firestore
+        .collection("VideoCall")
+        .doc(channel.id)
+        .snapshots()
+        .listen((event) async {
+      final VideoCallModel model = VideoCallModel.fromJson(event.data()!);
+      if (model.callState == callState.callEnded.name) {
+        add(const VideocallEndEvent());
+      }
+    });
     on<VideocallJoinEvent>((event, emit) async {
       emit(VideocallLoadingState());
 
@@ -27,22 +49,30 @@ class AgoraVideocallBloc extends Bloc<VideocallEvent, VideoCallState> {
       _agoraService.handler = handler;
       await _agoraService.ready();
       final token = await _authService.currentUser!.getIdToken();
-      await _agoraService.joinChannel(token!, channel);
+      await _agoraService.joinChannel(token!, channel.id);
       emit(VideocallSucessState());
     });
-    on<VideocallEndEvent>((_, emit) {
+    on<VideocallEndEvent>((_, emit) async {
       _agoraService.leaveChannel();
-      _agoraService.dispose();
+
+      emit(VideoCallEndState());
     });
+    add(VideocallJoinEvent(channel.receiverId));
   }
 
   @override
   Future<void> close() async {
-    logger.i("close bloc");
-    await _agoraService.dispose();
+    logger.i("close bloc  vxx");
+    await _agoraService.close();
+    subscription?.cancel();
+
     // TODO: implement close
     return super.close();
   }
 
-  void contactListener(VideoCallModel room) {}
+  void contactListener(VideoCallModel room) {
+    if (room.callState == callState.callEnded) {
+      add(const VideocallEndEvent());
+    }
+  }
 }

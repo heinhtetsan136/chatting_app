@@ -7,9 +7,9 @@ import 'package:blca_project_app/injection.dart';
 import 'package:blca_project_app/logger.dart';
 import 'package:blca_project_app/repo/agoraService/agoraService.dart';
 import 'package:blca_project_app/repo/authService.dart';
-import 'package:blca_project_app/repo/ui_video_call_Service.dart/ui_video_call_Service.dart';
 import 'package:blca_project_app/repo/ui_video_call_Service.dart/video_call_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 enum callState { rejected, calling, callEnded, accepted }
@@ -29,7 +29,8 @@ class AgoraVideocallBloc extends Bloc<VideocallEvent, VideoCallState> {
   Stream<AgoraLiveConnection> get connectStream => _agoraService.connectStream;
   Stream get remoteId => _agoraService.connectStream;
   StreamSubscription? subscription;
-  RtcEngine get engine => _agoraService.engine;
+  RtcEngine get engine => _agoraService.engine!;
+  final GlobalKey<ScaffoldState> key = GlobalKey();
   late AgoraHandler handler;
   AgoraVideocallBloc(super.initialState, this.channel) {
     logger.i("bloc init ${channel.id}");
@@ -49,6 +50,7 @@ class AgoraVideocallBloc extends Bloc<VideocallEvent, VideoCallState> {
       await _agoraService.init();
       handler = AgoraHandler.dummy();
       _agoraService.handler = handler;
+      await Future.delayed(const Duration(seconds: 1));
       await _agoraService.ready();
       final token = await _authService.currentUser!.getIdToken();
       await _agoraService.joinChannel(token!, channel.id);

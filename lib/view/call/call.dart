@@ -18,99 +18,101 @@ class Call extends StatelessWidget {
 
     final videoCall = context.read<VideoCallDbBlco>();
     final agoraVideo = context.read<AgoraVideocallBloc>();
-    return BlocListener<AgoraVideocallBloc, VideoCallState>(
-      listener: (_, state) {
+    return Scaffold(
+      body: BlocConsumer<AgoraVideocallBloc, VideoCallState>(
+          listener: (_, state) {
         if (state is VideoCallEndState) {
           videoCall.add(const VideoCallDbLeaveEvent());
           StarlightUtils.pop();
         }
-      },
-      child: Scaffold(
-        body: BlocBuilder<AgoraVideocallBloc, VideoCallState>(
-            builder: (_, state) {
-          // if (state is VideocallLoadingState) {
-          //   return SizedBox(
-          //     width: context.width,
-          //     height: context.height,
-          //     child: const Center(
-          //       child: CircularProgressIndicator(),
-          //     ),
-          //   );
-          // }
-          return Stack(
-            children: [
-              Positioned.fill(
-                child: StreamBuilder(
-                    stream: agoraVideo.connectStream,
-                    builder: (context, snapshot) {
-                      print(snapshot.data);
-                      if (snapshot.data == null) {
-                        return const SizedBox(
-                          child: Center(
-                              child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              CircularProgressIndicator(),
-                              Text("Calling...")
-                            ],
-                          )),
-                        );
-                      }
-                      print(
-                          "[stream:onUserJoined] uid is ${snapshot.data?.remoteId}");
-                      print(
-                          "[stream:onUserJoined] louid is ${snapshot.data?.connection.localUid}");
-                      return remoteView(
-                        conn: snapshot.data!,
-                      );
-                    }),
-              ),
-              Positioned(top: 20, child: Text("$state")),
-              const Positioned(
-                right: 20,
-                top: 40,
-                height: 150,
-                width: 150,
-                child: localView(),
-              ),
-              Positioned(
-                bottom: 100,
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      IconButton(
-                          onPressed: () {},
-                          icon: const Icon(
-                            Icons.camera_alt_outlined,
-                            size: 50,
-                          )),
-                      IconButton(
-                        onPressed: () {},
-                        icon: const Icon(
-                          Icons.mic_off_outlined,
-                          size: 50,
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () {
-                          videoCall.add(const VideoCallDbLeaveEvent());
-                        },
-                        icon: const Icon(
-                          color: Colors.red,
-                          Icons.call_end,
-                          size: 50,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
+      }, builder: (_, state) {
+        if (state is VideocallLoadingState) {
+          return SizedBox(
+            width: context.width,
+            height: context.height,
+            child: const Center(
+              child: CircularProgressIndicator(),
+            ),
           );
-        }),
-      ),
+        }
+        return Column(
+          children: [
+            const localView(),
+            Expanded(
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: StreamBuilder(
+                        stream: agoraVideo.connectStream,
+                        builder: (context, snapshot) {
+                          print(snapshot.data);
+                          if (snapshot.data == null) {
+                            return const SizedBox(
+                              child: Center(
+                                  child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  CircularProgressIndicator(),
+                                  Text("Calling...")
+                                ],
+                              )),
+                            );
+                          }
+                          print(
+                              "[stream:onUserJoined] uid is ${snapshot.data?.remoteId}");
+                          print(
+                              "[stream:onUserJoined] louid is ${snapshot.data?.connection.localUid}");
+                          return remoteView(
+                            conn: snapshot.data!,
+                          );
+                        }),
+                  ),
+                  Positioned(top: 20, child: Text("$state")),
+                  const Positioned(
+                    right: 20,
+                    top: 40,
+                    child: localView(),
+                  ),
+                  Positioned(
+                    bottom: 100,
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.width,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          IconButton(
+                              onPressed: () {},
+                              icon: const Icon(
+                                Icons.camera_alt_outlined,
+                                size: 50,
+                              )),
+                          IconButton(
+                            onPressed: () {},
+                            icon: const Icon(
+                              Icons.mic_off_outlined,
+                              size: 50,
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () {
+                              videoCall.add(const VideoCallDbLeaveEvent());
+                            },
+                            icon: const Icon(
+                              color: Colors.red,
+                              Icons.call_end,
+                              size: 50,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      }),
     );
   }
 }
@@ -143,9 +145,10 @@ class localView extends StatelessWidget {
   Widget build(BuildContext context) {
     final agoraVideo = context.read<AgoraVideocallBloc>();
     return Container(
+      width: 300,
+      height: 200,
       color: Colors.blue,
       child: AgoraVideoView(
-        key: UniqueKey(),
         onAgoraVideoViewCreated: (controller) {
           logger.i("this is AgLocal $controller");
         },

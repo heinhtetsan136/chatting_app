@@ -68,9 +68,15 @@ const int _waiting = 0;
 class AgoraService {
   StreamController<AgoraLiveConnection> stream = StreamController.broadcast();
   Stream<AgoraLiveConnection> get connectStream => stream.stream;
-  final RtcEngine engine;
+  RtcEngine? engine;
   static AgoraService? _instance;
-  AgoraService._() : engine = createAgoraRtcEngine();
+  AgoraService._() {
+    if (engine != null) {
+      engine!.leaveChannel();
+      engine!.release();
+    }
+    engine = createAgoraRtcEngine();
+  }
   static Future<AgoraService> instance() async {
     _instance ??= AgoraService._();
     return _instance!;
@@ -86,7 +92,9 @@ class AgoraService {
     logger.i("Agora init");
     assert(status == 0);
     await requestPermission();
-    await engine.initialize(
+
+    await Future.delayed(const Duration(seconds: 2));
+    await engine!.initialize(
       RtcEngineContext(
           appId: appId,
           channelProfile: ChannelProfileType.channelProfileCommunication),
@@ -157,46 +165,48 @@ class AgoraService {
     assert(status == 2);
     logger.i("Agora Join");
 
-    await engine.joinChannel(
+    await engine!.joinChannel(
         token: "",
         // token:
         //     "007eJxTYOhJFNjzau675gfH7Pfcy8hn3nA+W8Z158FZN1czarn/CDmvwGCYbJFoapScYphinGpiamxkaWBqZGSZbJlmlGJhmmSeeCJfJ70hkJGhvu4sEyMDBIL4XAwZGcXJGYl5eak5DAwAu9Ejrw==",
         // channelId: "hhschannel",
         channelId: channel,
         uid: 0,
-        options: const ChannelMediaOptions(token: ""));
+        options: const ChannelMediaOptions());
   }
 
   Future<void> leaveChannel() async {
     assert(status == 2);
 
-    await engine.leaveChannel();
+    await engine!.leaveChannel();
   }
 
   Future<void> close() async {
     logger.i("bloc init $state");
     logger.i("status $status");
     assert(status > 0);
-    await engine.stopPreview();
-    logger.i("bloc init new $state");
-    engine.unregisterEventHandler(_handler!);
-    await engine.leaveChannel();
-    await engine.release();
+    try {
+      await engine!.stopPreview();
+      logger.i("bloc init new $state");
+      engine!.unregisterEventHandler(_handler!);
+      await engine!.leaveChannel();
+      await engine!.release();
 
-    connection = null;
-
+      connection = null;
+    } catch (e) {
+      logger.e(e.toString());
+    }
+    await Future.delayed(const Duration(seconds: 1));
     AgoraService._instance = null;
     state = 0;
   }
 
   Future<void> ready() async {
     assert(status == 1);
-    engine.registerEventHandler(_handler!);
+    engine!.registerEventHandler(_handler!);
     logger.i("Agora ready");
-
-    await engine.enableVideo();
-    await engine.enableLocalVideo(true);
-    await engine.startPreview();
+    await engine!.startPreview();
+    await engine!.enableVideo();
 
     state = 2;
   }

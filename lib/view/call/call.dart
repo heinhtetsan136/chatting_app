@@ -35,79 +35,72 @@ class Call extends StatelessWidget {
             ),
           );
         }
-        return Column(
+        return Stack(
           children: [
-            const localView(),
-            Expanded(
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: StreamBuilder(
-                        stream: agoraVideo.connectStream,
-                        builder: (context, snapshot) {
-                          print(snapshot.data);
-                          if (snapshot.data == null) {
-                            return const SizedBox(
-                              child: Center(
-                                  child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  CircularProgressIndicator(),
-                                  Text("Calling...")
-                                ],
-                              )),
-                            );
-                          }
-                          print(
-                              "[stream:onUserJoined] uid is ${snapshot.data?.remoteId}");
-                          print(
-                              "[stream:onUserJoined] louid is ${snapshot.data?.connection.localUid}");
-                          return remoteView(
-                            conn: snapshot.data!,
-                          );
-                        }),
-                  ),
-                  Positioned(top: 20, child: Text("$state")),
-                  const Positioned(
-                    right: 20,
-                    top: 40,
-                    child: localView(),
-                  ),
-                  Positioned(
-                    bottom: 100,
-                    child: SizedBox(
-                      width: MediaQuery.of(context).size.width,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: [
-                          IconButton(
-                              onPressed: () {},
-                              icon: const Icon(
-                                Icons.camera_alt_outlined,
-                                size: 50,
-                              )),
-                          IconButton(
-                            onPressed: () {},
-                            icon: const Icon(
-                              Icons.mic_off_outlined,
-                              size: 50,
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () {
-                              videoCall.add(const VideoCallDbLeaveEvent());
-                            },
-                            icon: const Icon(
-                              color: Colors.red,
-                              Icons.call_end,
-                              size: 50,
-                            ),
-                          ),
-                        ],
+            Positioned.fill(
+              child: StreamBuilder(
+                  stream: agoraVideo.connectStream,
+                  builder: (context, snapshot) {
+                    print(snapshot.data);
+                    if (snapshot.data == null) {
+                      return const SizedBox(
+                        child: Center(
+                            child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircularProgressIndicator(),
+                            Text("Calling...")
+                          ],
+                        )),
+                      );
+                    }
+                    print(
+                        "[stream:onUserJoined] uid is ${snapshot.data?.remoteId}");
+                    print(
+                        "[stream:onUserJoined] louid is ${snapshot.data?.connection.localUid}");
+                    return remoteView(
+                      conn: snapshot.data!,
+                    );
+                  }),
+            ),
+            Positioned(top: 20, child: Text("$state")),
+            const Positioned(
+              right: 20,
+              top: 40,
+              child: localView(),
+            ),
+            Positioned(
+              bottom: 100,
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    IconButton(
+                        onPressed: () {},
+                        icon: const Icon(
+                          Icons.camera_alt_outlined,
+                          size: 50,
+                        )),
+                    IconButton(
+                      onPressed: () {},
+                      icon: const Icon(
+                        Icons.mic_off_outlined,
+                        size: 50,
                       ),
                     ),
-                  ),
-                ],
+                    IconButton(
+                      onPressed: () {
+                        videoCall.add(const VideoCallDbLeaveEvent());
+                      },
+                      icon: const Icon(
+                        color: Colors.red,
+                        Icons.call_end,
+                        size: 50,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -117,19 +110,24 @@ class Call extends StatelessWidget {
   }
 }
 
-class remoteView extends StatelessWidget {
+class remoteView extends StatefulWidget {
   remoteView({super.key, required this.conn});
   AgoraLiveConnection conn;
 
+  @override
+  State<remoteView> createState() => _remoteViewState();
+}
+
+class _remoteViewState extends State<remoteView> {
   @override
   Widget build(BuildContext context) {
     final agoraVideo = context.read<AgoraVideocallBloc>();
     return AgoraVideoView(
         key: UniqueKey(),
         controller: VideoViewController.remote(
-            canvas: VideoCanvas(uid: conn.remoteId),
+            canvas: VideoCanvas(uid: widget.conn.remoteId),
             rtcEngine: agoraVideo.engine,
-            connection: conn.connection
+            connection: widget.conn.connection
             // connection: const RtcConnection(
             //     localUid: 0,
             //     channelId:
@@ -138,9 +136,14 @@ class remoteView extends StatelessWidget {
   }
 }
 
-class localView extends StatelessWidget {
+class localView extends StatefulWidget {
   const localView({super.key});
 
+  @override
+  State<localView> createState() => _localViewState();
+}
+
+class _localViewState extends State<localView> {
   @override
   Widget build(BuildContext context) {
     final agoraVideo = context.read<AgoraVideocallBloc>();
